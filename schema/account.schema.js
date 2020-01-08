@@ -49,8 +49,12 @@ const accountSchema = new mongoose.Schema({
     qruri: String,
     roles: [String],
     blocked: {
-        type: Boolean,
-        default: false
+        default: false,
+        type: Boolean
+    },
+    deleted: {
+        default: false,
+        type: Boolean
     },
     tokens: [{
         token: {
