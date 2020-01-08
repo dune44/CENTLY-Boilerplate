@@ -1,7 +1,9 @@
 # protected directories
 .config
+.directory
 .gitignore
 coverage
+
 
 # Logs
 logs
