@@ -1,3 +1,6 @@
+# protected directories
+.config
+
 # Logs
 logs
 *.log
