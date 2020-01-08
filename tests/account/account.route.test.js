@@ -13,5 +13,22 @@ before( () => {
 });
 
 describe('Account Route /api/account', () =>{
+    describe('GET', async () => {
 
+    });
+    describe('POST', async () => {
+
+    });
+    describe('PUT', async () => {
+
+    });
+    describe('DELETE', async () => {
+
+    });
+});
+
+describe('Account Route /api/account/login', () =>{
+    describe('POST', async () => {
+
+    });
 });
