@@ -1,8 +1,8 @@
 {
-  "name": "MENTL-Boilerplate",
+  "name": "mentl-boilerplate",
   "version": "1.0.0",
-  "description": "MENTL Mongo Express Node Tested Login. A boilerplate application for building a RESTful APIs in Node.js using express and mongoose. With user login routes already wired.",
-  "main": "index.js",
+  "description": "MENTL My Express Node Tested Login. A boilerplate application for building a RESTful APIs in Node.js using express. With user login routes already wired.",
+  "main": "bin/index.js",
   "bin": {
     "MENTL-Boilerplate": "index.js"
   },

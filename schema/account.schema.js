@@ -2,22 +2,28 @@ const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const validator = require('validator');
+const osom = require('osom');
 /*
     Model for User login
     Put secret as a placeholder for possible future security feature.
     enable2a qruri for Qr code URI 2 stage authentication
 */
+const trim = (str) => str.trim();
+const globalFields = {
+    transform: [trim]
+};
 
 const schema = {
     username: {
         required: true,
-        trim: true,
+        transform: [],
         type: String,
         unique: true
     },
     password: {
         minlength: 30,
         required: true,
+        transform: [],
         type: String,
         validate(value) {
             if(value.toLowerCase().includes('password') ||
@@ -29,6 +35,7 @@ const schema = {
     email: {
         lowercase: true,
         trim: true,
+        transform: [],
         type: String,
         unique: true,
         validate(value) {
@@ -119,4 +126,6 @@ accountSchema.statics.comparePassword = async function(username, password) {
 
 const Account = mongoose.model('Account', accountSchema);
 
-module.exports = schema;
+const aSchema = osom(schema);
+module.exports = async.asyncify(aSchema);
+module.exports.sync = aSchema;
