@@ -8,7 +8,7 @@ const validator = require('validator');
     enable2a qruri for Qr code URI 2 stage authentication
 */
 
-const accountSchema = new mongoose.Schema({
+const schema = {
     username: {
         required: true,
         trim: true,
@@ -66,7 +66,9 @@ const accountSchema = new mongoose.Schema({
             fwdip: String
         }
     }]
-});
+};
+
+const accountSchema = new mongoose.Schema(schema);
 
 // Make sure password is hashed before saving to db.
 accountSchema.pre('validate', async function(next) {
@@ -117,3 +119,4 @@ accountSchema.statics.comparePassword = async function(username, password) {
 
 const Account = mongoose.model('Account', accountSchema);
 
+module.exports = schema;
