@@ -14,6 +14,12 @@ const globalFields = {
 };
 
 const schema = {
+    _id: {
+        type: String
+    },
+    _type: {
+        type: String
+    },
     username: {
         required: true,
         transform: [],
@@ -74,57 +80,6 @@ const schema = {
         }
     }]
 };
-
-const accountSchema = new mongoose.Schema(schema);
-
-// Make sure password is hashed before saving to db.
-accountSchema.pre('validate', async function(next) {
-    let account = this;
-    if (account.isModified('password')){
-        account.password = await bcrypt.hash(account.password, 8);
-    }
-    next();
-});
-
-// Generate JWT Token and save
-accountSchema.methods.generateToken = async function (ips) {
-    const account = this;
-
-    const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, '7 days' );
-
-    // add token to account with their current ip.
-    // add a forwarded IP to check if user has a proxy.
-    account.tokens = account.tokens.concat({
-        token: token,
-        ips: {
-            ip:ips.ip,
-            fwdIP: ips.fwdIP
-        }
-    });
-
-    await account.save();
-
-    return token;
-}
-
-// Compare Password for login
-accountSchema.statics.comparePassword = async function(username, password) {
-    const account = await Account.findOne({ username: username });
-    
-    if (!account) {
-        throw new Error('Account not found');
-    }
-
-    const isMatch = await bcrypt.compare(password, account.password);
-
-    if (!isMatch) {
-        throw new Error('Invalid login credentials');
-    }
-
-    return account
-};
-
-const Account = mongoose.model('Account', accountSchema);
 
 const aSchema = osom(schema,globalFields);
 module.exports = {
