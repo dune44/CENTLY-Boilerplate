@@ -126,7 +126,7 @@ accountSchema.statics.comparePassword = async function(username, password) {
 
 const Account = mongoose.model('Account', accountSchema);
 
-const aSchema = osom(schema);
+const aSchema = osom(schema,globalFields);
 module.exports = {
     "async": async.asyncify(aSchema),
     "sync": aSchema
