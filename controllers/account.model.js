@@ -1,15 +1,22 @@
 const accountSchema = require('./../schema/account.schema');
-const db = require('./db');
 const bcrypt = require('bcryptjs');
+const collection = db.collection(process.env.BUCKET);
+const db = require('./db');
 const moment = require('moment');
 const speakeasy = require('speakeasy');
+const uuidv4 = require('uuid/v4');
 const QRCode = require('qrcode');
-var collection = db.collection(process.env.BUCKET);
 
 const accountModel = {
     Create: {
-        account: (account) => {
-
+        account: async (account) => {
+            account._id = uuidv4();
+            account._type = 'account';
+            const validatedAccount = await accountSchema(account);
+            console.log('validatedAccount');
+            console.log(validatedAccount);
+            console.log();
+            return validatedAccount;
         }
     },
     Read: {
@@ -28,8 +35,7 @@ const accountModel = {
         isInRole: (uid,role) => {
 
         },
-        validateAccount: (account) => {
-            let account = this;
+        validateAccount: async (account) => {
             if (account.isModified('password')){
                 account.password = await bcrypt.hash(account.password, 8);
             }

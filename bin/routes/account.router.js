@@ -1,4 +1,5 @@
 const auth = require('../../middleware/auth');
+const accountController = require('./../../controllers/account.model');
 
 const accountRoutes = (app) => {
     /*
@@ -14,7 +15,13 @@ const accountRoutes = (app) => {
         Expects Username, Password and Email
     */
     app.post('/api/account', async (req, res) => {
-        res.status(400).send('route not written.');
+        const account = {
+            username: req.params.username,
+            password: req.params.password,
+            email: req.params.email
+        };
+        const result = await accountController.Create.account(account);
+        res.status(201).send(result);
     });
 
     // Auth user updates account here.
@@ -35,3 +42,5 @@ const accountRoutes = (app) => {
         res.status(400).send('route not written.');
     });
 }
+
+module.exports = accountRoutes;
