@@ -6,7 +6,7 @@ const accountRoutes = (app) => {
         Account Read
         Will return one users account info.
     */
-    app.get('/api/account', async (req, res) => {
+    app.get('/api/account', (req, res) => {
         res.status(400).send('route not written.');
     });
 
@@ -14,14 +14,15 @@ const accountRoutes = (app) => {
         Account Creation
         Expects Username, Password and Email
     */
-    app.post('/api/account', async (req, res) => {
+    app.post('/api/account', (req, res) => {
         const account = {
-            username: req.params.username,
-            password: req.params.password,
-            email: req.params.email
+            username: req.body.username,
+            password: req.body.password,
+            email: req.body.email
         };
-        const result = await accountController.Create.account(account);
-        res.status(201).send(result);
+        accountController.Create.account(account, (result) => {
+            res.status(201).send(result);
+        });
     });
 
     // Auth user updates account here.

@@ -1,22 +1,40 @@
 const accountSchema = require('./../schema/account.schema');
 const bcrypt = require('bcryptjs');
-const collection = db.collection(process.env.BUCKET);
+const couchbase = require('couchbase');
 const db = require('./db');
 const moment = require('moment');
+const N1qlQuery = couchbase.N1qlQuery;
 const speakeasy = require('speakeasy');
 const uuidv4 = require('uuid/v4');
 const QRCode = require('qrcode');
-
+//const collection = db.collection(process.env.BUCKET);
+// console.log(N1qlQuery);
 const accountModel = {
     Create: {
-        account: async (account) => {
-            account._id = uuidv4();
-            account._type = 'account';
-            const validatedAccount = await accountSchema(account);
-            console.log('validatedAccount');
-            console.log(validatedAccount);
-            console.log();
-            return validatedAccount;
+        account: (account, next) => {
+            if(!accountMethod.disallowedName(account.username)){
+                accountMethod.duplicateName(account.username, (duplicate) => {
+                    if(!duplicate){
+                        account._id = uuidv4();
+                        const validatedAccount = accountSchema.account(account);
+                        db.insert('account|'+validatedAccount._id,validatedAccount, (e,r,m) => {
+                            if(e){
+                                console.log('Error insert account.');
+                                console.log(e);
+                                next({ "msg": "An error occured. Account not created."});
+                            } else {
+                                console.log('result');
+                                console.log(r);
+                                next( validatedAccount );
+                            }
+                        });
+                    }else{
+                        next({ "msg": "Username already in use."});
+                    }
+                });
+            }else{
+                next({ "msg": "Username is not allowed."});
+            }
         }
     },
     Read: {
@@ -80,8 +98,25 @@ const accountModel = {
     }
 };
 const accountMethod = {
-    checkForDupicatAccount: () => {
-
+    duplicateName: (username, next) => {
+        const q = N1qlQuery.fromString('SELECT * FROM '+process.env.BUCKET+' WHERE username=$1');
+        db.query(q, [username], (e, r) => {
+            if(e){
+                console.log('error in accountMethod.duplicateName')
+                console.log(e);
+                next(true);
+            }else{
+                next( (r.length > 0) );
+            }
+        });
+    },
+    disallowedName: (username) => {
+        const nameList =[
+            "admin",
+            "administrater",
+            "username"
+        ];
+        return (nameList.indexOf(username) > -1);
     }
 }
 module.exports = accountModel;

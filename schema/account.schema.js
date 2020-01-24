@@ -1,5 +1,7 @@
-const validator = require('validator');
+const async = require('wrap-sync');
 const osom = require('osom');
+const validator = require('validator');
+
 /*
     Model for User login
     Put secret as a placeholder for possible future security feature.
@@ -7,12 +9,9 @@ const osom = require('osom');
 */
 const trim = (str) => str.trim();
 const tlc = (str) => str.toLowerCase();
-const validatePassword = (value) => (value.length < 30)
-const validateEmail = (value) => {
-    if(!validator.isEmail(value)){
-        throw new Error('Invalid email entered');
-    }
-};
+const validatePassword = (value) => (value.length < 30);
+const validateEmail = (value) => (validator.isEmail(value));
+
 const globalFields = {
     transform: [trim]
 };
@@ -22,28 +21,37 @@ const accountSchema = {
         type: String
     },
     _type: {
+        _type: 'account',
         type: String
     },
     username: {
         required: true,
-        transform: [],
+        transform: [trim],
         type: String
     },
     password: {
         required: true,
-        transform: [],
+        transform: [trim],
         validate: validatePassword,
         type: String
     },
     email: {
-        transform: [tlc],
+        transform: [tlc,trim],
         type: String,
         validate: validateEmail
     },
-    enable2a: Boolean,
-    secret: String,
-    qruri: String,
-    roles: [String],
+    enable2a: {
+     type: Boolean
+    },
+    secret: {
+        type: String
+    },
+    qruri:{
+        type: String
+    },
+    roles: {
+        type: Array
+    },
     blocked: {
         default: false,
         type: Boolean
@@ -51,6 +59,12 @@ const accountSchema = {
     deleted: {
         default: false,
         type: Boolean
+    },
+    token: {
+        type: Array
+    },
+    date: {
+        type: Object
     }
 };
 
@@ -58,7 +72,7 @@ const dateSchema = {
     origin: {
         type: Date
     },
-    update: {
+    updated: {
         type: Date,
         default: Date.now
     }
@@ -81,28 +95,10 @@ const tokenSchema = {
         type: String
     }
 };
-
-const accountOsom = osom(accountSchema,globalFields);
-const dateOsom = osom(dateSchema);
-const ipsOsom = osom(ipsSchema);
-const tokenOsom = osom(tokenSchema);
-
-
-module.exports = {
-    account: {
-        "async": async.asyncify(accountOsom),
-        "sync": accountOsom
-    },
-    date: {
-        "async": async.asyncify(dateOsom),
-        "sync": dateOsom
-    },
-    ips: {
-        "async": async.asyncify(ipsOsom),
-        "sync": ipsOsom
-    },
-    token: {
-        "async": async.asyncify(tokenOsom),
-        "sync": tokenOsom
-    }
+const methods = {
+    account: (value) => osom(accountSchema)(value),
+    date: (value) => osom(dateSchema)(value),
+    ips: (value) => osom(ipsSchema)(value),
+    token: (value) => osom(tokenSchema)(value)
 };
+module.exports = methods;
