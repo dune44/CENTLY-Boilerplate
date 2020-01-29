@@ -18,6 +18,7 @@ const globalFields = {
 
 const accountSchema = {
     _id: {
+        required: true,
         type: String
     },
     _type: {
@@ -36,6 +37,7 @@ const accountSchema = {
         type: String
     },
     email: {
+        required: true,
         transform: [tlc,trim],
         type: String,
         validate: validateEmail

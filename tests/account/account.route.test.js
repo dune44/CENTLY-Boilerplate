@@ -9,7 +9,6 @@ const app = require("../../bin/app");
 const accountSchema = require('../../schema/account.schema');
 
 before( () => {
-    accountSchema.deleteMany();
 });
 
 describe('Account Route /api/account', () =>{

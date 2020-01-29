@@ -16,7 +16,9 @@ const accountModel = {
                 accountMethod.duplicateName(account.username, (duplicate) => {
                     if(!duplicate){
                         account._id = uuidv4();
+                        console.log('validating account with osom.');
                         const validatedAccount = accountSchema.account(account);
+                        console.log('insert data into couchbase.');
                         db.insert('account|'+validatedAccount._id,validatedAccount, (e,r,m) => {
                             if(e){
                                 console.log('Error insert account.');
@@ -29,11 +31,15 @@ const accountModel = {
                             }
                         });
                     }else{
-                        next({ "msg": "Username already in use."});
+                        const msg = 'Username already in use.';
+                        console.log(msg);
+                        next({ "msg": msg });
                     }
                 });
             }else{
-                next({ "msg": "Username is not allowed."});
+                const msg = 'Username is not allowed.';
+                console.log(msg);
+                next({ "msg": msg });
             }
         }
     },
@@ -115,6 +121,7 @@ const accountMethod = {
                 console.log(e);
                 next(true);
             }else{
+                console.log('username duplicate: ' + (r.length > 0));
                 next( (r.length > 0) );
             }
         });
