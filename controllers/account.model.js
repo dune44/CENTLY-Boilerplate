@@ -138,11 +138,9 @@ const accountMethod = {
         return ( nameList.indexOf( username ) > -1 );
     },
     ink: ( password, done ) => {
-        const rander = Math.random();
-        const pwd = password + ' ' + rander;
         bcrypt.genSalt( 5, function( e, salt ) {
           if( e ) console.error( e );
-          bcrypt.hash( pwd, salt, function( er, hash ) {
+          bcrypt.hash( password, salt, function( er, hash ) {
             if( er ) {
               console.error(er);
             }else{
