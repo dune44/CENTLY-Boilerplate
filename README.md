@@ -1,7 +1,7 @@
 # CENTLY-Boilerplate
 CENTLy Couchbase Express Node Tested Login. A boilerplate application for building RESTful APIs in Node.js using couchbase, express and Osom.
 
-Preparation
+#Preparation
 create your own .config folder to store ENV files, I have set this up to take dev.env and test.env repectively.
 ENV variables needed for this project are:
 
