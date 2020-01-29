@@ -9,7 +9,7 @@ const validator = require('validator');
 */
 const trim = (str) => str.trim();
 const tlc = (str) => str.toLowerCase();
-const validatePassword = (value) => (value.length < 30);
+const validatePassword = (value) => (value.length > 30);
 const validateEmail = (value) => (validator.isEmail(value));
 
 const globalFields = {

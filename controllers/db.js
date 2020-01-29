@@ -22,8 +22,6 @@ const indexer = () => {
                 bucket.query(FKaccount_username);
             }
         });
-    }else{
-        console.log('NODE_ENV is ' + process.env.NODE_ENV);
     }
 };
 

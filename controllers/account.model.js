@@ -16,19 +16,22 @@ const accountModel = {
                 accountMethod.duplicateName(account.username, (duplicate) => {
                     if(!duplicate){
                         account._id = uuidv4();
-                        console.log('validating account with osom.');
-                        const validatedAccount = accountSchema.account(account);
-                        console.log('insert data into couchbase.');
-                        db.insert('account|'+validatedAccount._id,validatedAccount, (e,r,m) => {
-                            if(e){
-                                console.log('Error insert account.');
-                                console.log(e);
-                                next({ "msg": "An error occured. Account not created."});
-                            } else {
-                                console.log('result');
-                                console.log(r);
-                                next( validatedAccount );
-                            }
+                        accountMethod.ink(account.password, (hash) => {
+                            account.password = hash;
+                            console.log('validating account with osom.');
+                            const validatedAccount = accountSchema.account(account);
+                            console.log('insert data into couchbase.');
+                            db.insert('account|'+validatedAccount._id,validatedAccount, (e,r,m) => {
+                                if(e){
+                                    console.log('Error insert account.');
+                                    console.log(e);
+                                    next({ "msg": "An error occured. Account not created."});
+                                } else {
+                                    console.log('result');
+                                    console.log(r);
+                                    next( validatedAccount );
+                                }
+                            });
                         });
                     }else{
                         const msg = 'Username already in use.';
@@ -126,13 +129,27 @@ const accountMethod = {
             }
         });
     },
-    disallowedName: (username) => {
+    disallowedName: ( username ) => {
         const nameList =[
             "admin",
             "administrater",
             "username"
         ];
-        return (nameList.indexOf(username) > -1);
+        return ( nameList.indexOf( username ) > -1 );
+    },
+    ink: ( password, done ) => {
+        const rander = Math.random();
+        const pwd = password + ' ' + rander;
+        bcrypt.genSalt( 5, function( e, salt ) {
+          if( e ) console.error( e );
+          bcrypt.hash( pwd, salt, function( er, hash ) {
+            if( er ) {
+              console.error(er);
+            }else{
+              done( hash );
+            }
+          });
+        });
     }
 }
 module.exports = accountModel;

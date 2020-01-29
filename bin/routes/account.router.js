@@ -14,13 +14,13 @@ const accountRoutes = (app) => {
         Account Creation
         Expects Username, Password and Email
     */
-    app.post('/api/account', (req, res) => {
+    app.post('/api/account', async (req, res) => {
         const account = {
             username: req.body.username,
             password: req.body.password,
             email: req.body.email
         };
-        accountController.Create.account(account, (result) => {
+        await accountController.Create.account(account, (result) => {
             res.status(201).send(result);
         });
     });
