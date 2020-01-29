@@ -1,18 +1,18 @@
 {
-  "name": "mentl-boilerplate",
+  "name": "cently-boilerplate",
   "version": "1.0.0",
-  "description": "MENTL My Express Node Tested Login. A boilerplate application for building a RESTful APIs in Node.js using express. With user login routes already wired.",
+  "description": "CENTLy Couchbase Express Node Tested Login. A boilerplate application for building a RESTful APIs in Node.js using express with osom model validation.",
   "main": "bin/index.js",
   "bin": {
     "MENTL-Boilerplate": "index.js"
   },
   "scripts": {
     "dev": "env-cmd -f ./.config/dev.env node bin/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "env-cmd -f ./.config/test.env ./node_modules/mocha/bin/mocha tests --recursive"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dune44/MENTL-Boilerplate.git"
+    "url": "git+https://github.com/dune44/CENTLy-Boilerplate.git"
   },
   "keywords": [
     "couchbase",
@@ -28,9 +28,9 @@
   "author": "Richard Silence",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/dune44/MENTL-Boilerplate/issues"
+    "url": "https://github.com/dune44/CENTLy-Boilerplate/issues"
   },
-  "homepage": "https://github.com/dune44/MENTL-Boilerplate#readme",
+  "homepage": "https://github.com/dune44/CENTLy-Boilerplate#readme",
   "dependencies": {
     "bcryptjs": "2.4.3",
     "body-parser": "1.19.0",

@@ -1,3 +1,4 @@
-const mongoose = require('mongoose');
+const couchbase = require('couchbase');
 const jwt = require('jsonwebtoken');
-const userSchema = require('../../schema/account.schema');
+const userModel = require('../../controllers/account.model');
+

@@ -39,7 +39,16 @@ const accountModel = {
     },
     Read: {
         accountById: (uid) => {
-
+            const q = N1qlQuery.fromString('SELECT * FROM `'+process.env.BUCKET+'` WHERE _id=$1');
+            db.query(q, [uid], (e, r) => {
+                if(e){
+                    console.log('error in accountModel.Read.accountById')
+                    console.log(e);
+                    next(false);
+                }else{
+                    next ( (r.length === 1) ? (r[0]) : false );
+                }
+            });
         },
         accountByUsername: (username) => {
 
@@ -99,7 +108,7 @@ const accountModel = {
 };
 const accountMethod = {
     duplicateName: (username, next) => {
-        const q = N1qlQuery.fromString('SELECT * FROM '+process.env.BUCKET+' WHERE username=$1');
+        const q = N1qlQuery.fromString('SELECT * FROM `'+process.env.BUCKET+'` WHERE `username`=$1');
         db.query(q, [username], (e, r) => {
             if(e){
                 console.log('error in accountMethod.duplicateName')
