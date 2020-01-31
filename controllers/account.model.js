@@ -27,8 +27,6 @@ const accountModel = {
                                     console.log(e);
                                     next({ "msg": "An error occured. Account not created."});
                                 } else {
-                                    console.log('result');
-                                    console.log(r);
                                     next( validatedAccount );
                                 }
                             });
@@ -124,7 +122,6 @@ const accountMethod = {
                 console.log(e);
                 next(true);
             }else{
-                console.log('username duplicate: ' + (r.length > 0));
                 next( (r.length > 0) );
             }
         });

@@ -115,21 +115,21 @@ describe('Account Model Create a user account.', () => {
     it('should have a username longer than 30', () => {
         expect(newAccount.password).to.have.lengthOf.at.least(30);
     });
-                
+        
 });
 
-describe('Read findOne', () => {
+// describe('Read findOne', () => {
 
-});
+// });
 
-describe('Read Validate Credentials', () => {
+// describe('Read Validate Credentials', () => {
 
-});
+// });
 
-describe('Update', () => {
+// describe('Update', () => {
 
-});
+// });
 
-describe('Delete', () => {
+// describe('Delete', () => {
      
-});
+// });
