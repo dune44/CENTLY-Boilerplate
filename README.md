@@ -1,10 +1,24 @@
 # CENTLY-Boilerplate
 CENTLy Couchbase Express Node Tested Login. A boilerplate application for building RESTful APIs in Node.js using couchbase, express and Osom.
 
-#Preparation
+## TOC
+Installation
+Preparation
+ENV variables
+License
 
-Create your own .config folder to store ENV files, I have set this up to take dev.env and test.env repectively.
-ENV variables needed for this project are:
+## Installation
+Clone or Download
+
+## Preparation
+
+For dev Testing:
+Create a .config folder to store ENV files, I have set this up to take dev.env and test.env repectively.
+
+For Production:
+Make sure your server is setup with the necessary ENV vars.
+
+## ENV variables
 
 PORT            ( port for dev/testing server )
 
@@ -21,3 +35,9 @@ BUCKET          ( this should be different buckets based on dev or test scenario
 JWT_SECRET      ( this can be any secret, just don't tell anyone )
 
 NODE_ENV        ( set to dev or test respectively )
+
+
+## License: 
+Apache-2.0
+Link https://www.apache.org/licenses/LICENSE-2.0.html
+Summary https://tldrlegal.com/license/apache-license-2.0-%28apache-2.0%29
