@@ -29,26 +29,26 @@ const accountModel = {
                                     if(e){
                                         console.log( 'Error insert account.' );
                                         console.log( e );
-                                        next({ "msg": "An error occured. Account not created."});
+                                        next({ "msg": "An error occured. Account not created.", "result": false});
                                     } else {
-                                        next( validatedAccount );
+                                        next( { "data": validatedAccount, "result": true });
                                     }
                                 });
                             } else {
-                                next({ "msg": inkmsg });
+                                next({ "msg": inkmsg, "result": false });
                             }
                             
                         });
                     }else{
                         const msg = 'Username already in use.';
                         console.log( msg );
-                        next({ "msg": msg });
+                        next({ "msg": msg, "result": false });
                     }
                 });
             }else{
                 const msg = 'Username is not allowed.';
                 console.log( msg );
-                next({ "msg": msg });
+                next({ "msg": msg, "result": false });
             }
         }
     },
