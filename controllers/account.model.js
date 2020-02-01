@@ -7,6 +7,7 @@ const N1qlQuery = couchbase.N1qlQuery;
 const speakeasy = require('speakeasy');
 const uuidv4 = require('uuid/v4');
 const QRCode = require('qrcode');
+const validator = require('validator');
 
 // Test to make sure newer couchbase have flushed api. 
 //const collection = db.collection(process.env.BUCKET);
@@ -21,19 +22,24 @@ const accountModel = {
                         account._id = uuidv4();
                         accountMethod.ink(account.password, ( hash, inkmsg ) => {
                             if( hash ) {
-                                account.password = hash;
-                                console.log( 'validating account with osom.' );
-                                const validatedAccount = accountSchema.account( account );
-                                console.log( 'insert data into couchbase.' );
-                                db.insert('account|'+validatedAccount._id,validatedAccount, ( e ) => {
-                                    if(e){
-                                        console.log( 'Error insert account.' );
-                                        console.log( e );
-                                        next({ "msg": "An error occured. Account not created.", "result": false});
-                                    } else {
-                                        next( { "data": validatedAccount, "result": true });
-                                    }
-                                });
+                                if( accountMethod.preValidateModel( account ) ) {
+                                    account.password = hash;
+                                    const validatedAccount = accountSchema.account( account );
+                                    console.log( 'insert data into couchbase.' );
+                                    db.insert('account|'+validatedAccount._id,validatedAccount, ( e ) => {
+                                        if(e){
+                                            console.log( 'Error: inserting account' );
+                                            console.log( e );
+                                            next({ "msg": "An error occured. Account not created.", "error": e, "result": false});
+                                        } else {
+                                            next( { "data": validatedAccount, "result": true });
+                                        }
+                                    });
+                                } else {
+                                    let msg = ' Account validation failed ';
+                                    console.log( msg );
+                                    next({ "msg": msg, "result": false});
+                                }
                             } else {
                                 next({ "msg": inkmsg, "result": false });
                             }
@@ -143,22 +149,22 @@ const accountMethod = {
         return ( nameList.indexOf( username ) > -1 );
     },
     ink: ( password, done ) => {
-        if(password.length >= 8){
-            bcrypt.genSalt( 5, function( e, salt ) {
-                if( e ) console.error( e );
-                bcrypt.hash( password, salt, function( er, hash ) {
-                  if( er ) {
+        bcrypt.genSalt( 5, function( e, salt ) {
+            if( e ) console.error( e );
+            bcrypt.hash( password, salt, function( er, hash ) {
+                if( er ) {
                     console.error( er );
-                  }else{
+                }else{
                     done( hash, null );
-                  }
-                });
+                }
             });
-        } else {
-            console.log( 'password length failed.' );
-            done( false, 'Password too short.' );
-        }
-
+        });
+    },
+    preValidateModel: ( account ) => {
+        const validateEmail = validator.isEmail(account.email);
+        const validateUsername = ( account.username.length >= 3 );
+        const validatePassword = ( account.password.length >= 8 );
+        return ( validateEmail && validatePassword && validateUsername );        
     }
 }
 module.exports = accountModel;
