@@ -9,12 +9,9 @@ const validator = require('validator');
 */
 const trim = (str) => str.trim();
 const tlc = (str) => str.toLowerCase();
+const validateUsername = (value) => (value.length > 2);
 const validatePassword = (value) => (value.length > 30);
 const validateEmail = (value) => (validator.isEmail(value));
-
-const globalFields = {
-    transform: [trim]
-};
 
 const accountSchema = {
     _id: {
@@ -28,6 +25,7 @@ const accountSchema = {
     username: {
         required: true,
         transform: [trim],
+        validate: validateUsername,
         type: String
     },
     password: {

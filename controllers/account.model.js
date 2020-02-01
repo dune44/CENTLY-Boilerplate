@@ -7,39 +7,47 @@ const N1qlQuery = couchbase.N1qlQuery;
 const speakeasy = require('speakeasy');
 const uuidv4 = require('uuid/v4');
 const QRCode = require('qrcode');
+
+// Test to make sure newer couchbase have flushed api. 
 //const collection = db.collection(process.env.BUCKET);
 // console.log(N1qlQuery);
+
 const accountModel = {
     Create: {
-        account: (account, next) => {
-            if(!accountMethod.disallowedName(account.username)){
-                accountMethod.duplicateName(account.username, (duplicate) => {
+        account: ( account, next ) => {
+            if( !accountMethod.disallowedName( account.username ) ) {
+                accountMethod.duplicateName( account.username, ( duplicate ) => {
                     if(!duplicate){
                         account._id = uuidv4();
-                        accountMethod.ink(account.password, (hash) => {
-                            account.password = hash;
-                            console.log('validating account with osom.');
-                            const validatedAccount = accountSchema.account(account);
-                            console.log('insert data into couchbase.');
-                            db.insert('account|'+validatedAccount._id,validatedAccount, (e,r,m) => {
-                                if(e){
-                                    console.log('Error insert account.');
-                                    console.log(e);
-                                    next({ "msg": "An error occured. Account not created."});
-                                } else {
-                                    next( validatedAccount );
-                                }
-                            });
+                        accountMethod.ink(account.password, ( hash, inkmsg ) => {
+                            if( hash ) {
+                                account.password = hash;
+                                console.log( 'validating account with osom.' );
+                                const validatedAccount = accountSchema.account( account );
+                                console.log( 'insert data into couchbase.' );
+                                db.insert('account|'+validatedAccount._id,validatedAccount, ( e ) => {
+                                    if(e){
+                                        console.log( 'Error insert account.' );
+                                        console.log( e );
+                                        next({ "msg": "An error occured. Account not created."});
+                                    } else {
+                                        next( validatedAccount );
+                                    }
+                                });
+                            } else {
+                                next({ "msg": inkmsg });
+                            }
+                            
                         });
                     }else{
                         const msg = 'Username already in use.';
-                        console.log(msg);
+                        console.log( msg );
                         next({ "msg": msg });
                     }
                 });
             }else{
                 const msg = 'Username is not allowed.';
-                console.log(msg);
+                console.log( msg );
                 next({ "msg": msg });
             }
         }
@@ -114,13 +122,13 @@ const accountModel = {
     }
 };
 const accountMethod = {
-    duplicateName: (username, next) => {
-        const q = N1qlQuery.fromString('SELECT * FROM `'+process.env.BUCKET+'` WHERE `username`=$1');
-        db.query(q, [username], (e, r) => {
+    duplicateName: ( username, next ) => {
+        const q = N1qlQuery.fromString( 'SELECT * FROM `'+process.env.BUCKET+'` WHERE `username`=$1' );
+        db.query( q, [username], ( e, r ) => {
             if(e){
-                console.log('error in accountMethod.duplicateName')
-                console.log(e);
-                next(true);
+                console.log( 'error in accountMethod.duplicateName' )
+                console.log( e );
+                next( true );
             }else{
                 next( (r.length > 0) );
             }
@@ -135,16 +143,22 @@ const accountMethod = {
         return ( nameList.indexOf( username ) > -1 );
     },
     ink: ( password, done ) => {
-        bcrypt.genSalt( 5, function( e, salt ) {
-          if( e ) console.error( e );
-          bcrypt.hash( password, salt, function( er, hash ) {
-            if( er ) {
-              console.error(er);
-            }else{
-              done( hash );
-            }
-          });
-        });
+        if(password.length >= 8){
+            bcrypt.genSalt( 5, function( e, salt ) {
+                if( e ) console.error( e );
+                bcrypt.hash( password, salt, function( er, hash ) {
+                  if( er ) {
+                    console.error( er );
+                  }else{
+                    done( hash, null );
+                  }
+                });
+            });
+        } else {
+            console.log( 'password length failed.' );
+            done( false, 'Password too short.' );
+        }
+
     }
 }
 module.exports = accountModel;
