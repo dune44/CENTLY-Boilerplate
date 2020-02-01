@@ -100,20 +100,36 @@ describe('Account Model Create a user account.', () => {
             expect(newAccount).to.not.equal(false);
     });
 
-    it('should have property username', () => {
-        expect(newAccount).to.have.property('username');
+    it('should have property email', () => {
+        expect(newAccount).to.have.property('email');
+    });
+
+    it('email should be a string', () => {
+        expect(newAccount.email).to.be.a('string');
     });
 
     it('should have property password', () => {
         expect(newAccount).to.have.property('password');
     });
-    
-    it('should have property email', () => {
-        expect(newAccount).to.have.property('email');
+
+    it('password should be a string', () => {
+        expect(newAccount.password).to.be.a('string');
     });
     
-    it('should have a username longer than 30', () => {
+    it('should have a password longer than 30', () => {
         expect(newAccount.password).to.have.lengthOf.at.least(30);
+    });
+
+    it('should have property username', () => {
+        expect(newAccount).to.have.property('username');
+    });
+
+    it('username should be a string', () => {
+        expect(newAccount.username).to.be.a('string');
+    });
+
+    it('should have a username longer than 3', () => {
+        expect(newAccount.username).to.have.lengthOf.at.least(3);
     });
         
 });
