@@ -5,25 +5,13 @@ const db = require('./../../controllers/db');
 const chai = require('chai');
 const expect = chai.expect;
 
-let newAccount, newBadPasswordAccount, newBadUsernameAccount, newBadEmailAccount;
-
-function clearAccounts( next ){
-    const q = N1qlQuery.fromString( 'DELETE FROM `'+process.env.BUCKET+'`' );
-    db.query( q, ( e, r, m ) => {
-        if(e){
-            console.log( 'error in deleting test db' )
-            console.log( e );
-        }else{
-            // console.log( 'meta from deleting.' );
-            // console.log( m );
-            console.log( 'count from deleting.' );
-            console.log( m.metrics.mutationCount );
-            console.log( 'test db cleared ' );
-        }
-        console.log( 'end testing statement.' );
-        next();
-    });
-}
+let newAccount,
+    newBadPasswordAccount,
+    newBadUsernameAccount,
+    newBadEmailAccount,
+    readAccount,
+    testAccountUID;
+const username = 'testuser';
 
 function indexAvailable(next){
     console.log('testing test indexes.');
@@ -81,7 +69,7 @@ function runDbCalls( next ){
 
 function initializeAccount( next ) {
     const testUser = {
-        "username": "testuser",
+        "username": username,
         "password":"1A2b6O!b",
         "email": "dune44@hotmail.com",
     };
@@ -148,13 +136,6 @@ describe( 'Account Model Create a user account', () => {
                     runDbCalls( done );
                 }
         });
-    });
-
-    after( ( done ) => {
-        // Allow some timeout to allow db to settle
-        setTimeout( () => {
-            clearAccounts( done );
-        }, 200);
     });
 
     it( 'newAccount should not return false', () => {
@@ -238,9 +219,79 @@ describe( 'Account Model Create a user account', () => {
 
 });
 
-// describe('Read findOne', () => {
+function readTestaccountUID( next ){
+    accountModel.Read.accountByUsername( username, (result) => {
+        readAccount = result;
+        testAccountUID = readAccount._id;
+        next();
+    });
+}
 
-// });
+describe( 'Account Model Read accountByUsername', () => {
+
+    before( ( done ) => {
+        readTestaccountUID( done);
+    });
+
+    it( 'readAccount should contain property data._type', () => {
+        expect(readAccount.data).to.have.property('_type');
+    });
+
+    it( 'readAccount should contain propterty data._id', () => {
+        expect(readAccount.data).to.have.property('_id');
+
+    });
+
+    it( 'readAccount should contain propterty data.blocked', () => {
+        expect(readAccount.data).to.have.property('blocked');
+
+    });
+
+    it( 'readAccount should contain propterty data.deleted', () => {
+        expect(readAccount.data).to.have.property('deleted');
+
+    });
+
+    it( 'readAccount should contain propterty data.email', () => {
+        expect(readAccount.data).to.have.property('email');
+
+    });
+
+    it( 'readAccount should NOT contain propterty data.password', () => {
+        expect(readAccount.data).to.not.have.property('password');
+    });
+
+    it( 'readAccount should contain propterty data.username', () => {
+        expect(readAccount.data).to.have.property('username');
+    });
+
+    it( 'readAccount should contain propterty msg', () => {
+        expect(readAccount).to.have.property('msg');
+    });
+
+    it( 'readAccount should contain propterty result', () => {
+        expect(readAccount).to.have.property('result');
+    });
+
+    // Fails
+
+});
+
+function readAccountByUID(){
+
+}
+
+describe('Account Model Read accountById', () => {
+
+    before( ( ) => {
+
+    });
+
+    it('Should return property msg', () => {
+        expect(readAccount).to.have.property('msg');
+    });
+
+});
 
 // describe('Read Validate Credentials', () => {
 
@@ -253,3 +304,32 @@ describe( 'Account Model Create a user account', () => {
 // describe('Delete', () => {
      
 // });
+
+function clearAccounts( next ){
+    const q = N1qlQuery.fromString( 'DELETE FROM `'+process.env.BUCKET+'`' );
+    db.query( q, ( e, r, m ) => {
+        if(e){
+            console.log( 'error in deleting test db' )
+            console.log( e );
+        }else{
+            // console.log( 'meta from deleting.' );
+            // console.log( m );
+            console.log( 'count from deleting.' );
+            console.log( m.metrics.mutationCount );
+            console.log( 'test db cleared ' );
+        }
+        console.log( 'end testing statement.' );
+        next();
+    });
+}
+
+describe( 'Clear out db after tests', () => {
+
+    after( ( done ) => {
+        // Allow some timeout to allow db to settle
+        setTimeout( () => {
+            clearAccounts( done );
+        }, 200);
+    });
+
+});

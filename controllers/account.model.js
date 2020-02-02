@@ -60,16 +60,16 @@ const accountModel = {
     },
     Read: {
         accountById: (uid) => {
-            const q = N1qlQuery.fromString('SELECT * FROM `'+process.env.BUCKET+'` WHERE _id=$1');
-            db.query(q, [uid], (e, r) => {
-                if(e){
-                    console.log('error in accountModel.Read.accountById')
-                    console.log(e);
-                    next(false);
-                }else{
-                    next ( (r.length === 1) ? (r[0]) : false );
-                }
-            });
+            // const q = N1qlQuery.fromString('SELECT * FROM `'+process.env.BUCKET+'` WHERE _id=$1');
+            // db.query(q, [uid], (e, r) => {
+            //     if(e){
+            //         console.log('error in accountModel.Read.accountById')
+            //         console.log(e);
+            //         next(false);
+            //     }else{
+            //         next ( (r.length === 1) ? (r[0]) : false );
+            //     }
+            // });
         },
         accountByUsername: (username) => {
 
