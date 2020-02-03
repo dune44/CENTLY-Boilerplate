@@ -1,12 +1,12 @@
-const accountSchema = require('./../schema/account.schema');
+//const accountSchema = require('./../schema/account.schema');
 const bcrypt = require('bcryptjs');
 const couchbase = require('couchbase');
 const db = require('./db');
 const moment = require('moment');
 const N1qlQuery = couchbase.N1qlQuery;
 const speakeasy = require('speakeasy');
-const uuidv4 = require('uuid/v4');
 const QRCode = require('qrcode');
+const uuidv4 = require('uuid/v4');
 const validator = require('validator');
 
 // Test to make sure newer couchbase have flushed api. 
@@ -19,26 +19,24 @@ const accountModel = {
             if( !accountMethod.disallowedName( account.username ) ) {
                 accountMethod.duplicateName( account.username, ( duplicate ) => {
                     if(!duplicate){
-                        account._id = uuidv4();
                         accountMethod.ink(account.password, ( hash, inkmsg ) => {
                             if( hash ) {
-                                if( accountMethod.preValidateModel( account ) ) {
+                                const validModel = accountMethod.preValidateModel( account );
+                                if( validModel.result ) {
+                                    account = validModel.account;
                                     account.password = hash;
-                                    const validatedAccount = accountSchema.account( account );
-                                    console.log( 'insert data into couchbase.' );
-                                    db.insert('account|'+validatedAccount._id,validatedAccount, ( e ) => {
+                                    db.insert('account|'+account._id,account, ( e ) => {
                                         if(e){
                                             console.log( 'Error: inserting account' );
                                             console.log( e );
-                                            next({ "msg": "An error occured. Account not created.", "error": e, "result": false});
+                                            next({ "msg": "An error occured. Account not created.", "error": e, "result": false });
                                         } else {
-                                            next( { "data": validatedAccount, "result": true });
+                                            next({ "data": account, "result": true });
                                         }
                                     });
                                 } else {
-                                    const msg = ' Account validation failed ';
-                                    //console.log( msg );
-                                    next({ "msg": msg, "result": false});
+                                    console.log( validModel.msg );
+                                    next({ "msg": validModel.msg, "result": false});
                                 }
                             } else {
                                 next({ "msg": inkmsg, "result": false });
@@ -73,9 +71,9 @@ const accountModel = {
             next();
         },
         accountByUsername: ( username, next ) => {
-            const fields =  '`_id`, `_type`, `email`, `username`';
-            const q = N1qlQuery.fromString('SELECT '+fields+' FROM `'+process.env.BUCKET+'` WHERE `username`=$1');
-            db.query(q, [username], (e, r) => {
+            const fields = '_id, _type, `email`, `username`';
+            const q = N1qlQuery.fromString('SELECT '+fields+' FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND username == "' + username + '"');
+            db.query(q, (e, r) => {
                 if(e){
                     console.log('error in accountModel.Read.accountByUsername');
                     console.log(e);
@@ -86,7 +84,7 @@ const accountModel = {
                     } else {
                         console.log('accountByUsername result');
                         console.log(r);
-                        const msg = 'Result not found';
+                        const msg = 'Result not found for ' + username;
                         next({ "msg": msg, "result": false });
                     }
                 }
@@ -180,10 +178,27 @@ const accountMethod = {
         });
     },
     preValidateModel: ( account ) => {
-        const validateEmail = validator.isEmail(account.email);
-        const validateUsername = ( account.username.length >= 3 );
-        const validatePassword = ( account.password.length >= 8 );
-        return ( validateEmail && validatePassword && validateUsername );        
-    }
+        let result = true, msg = '';
+        if( !accountMethod.validateEmail( account.email ) ) {
+            result = false;
+            msg = ' Email is not valid. ';
+        }
+        if( !accountMethod.validatePassword( account.password ) ) {
+            result = false;
+            msg += ' Password is too short. ';
+        }
+        if( !accountMethod.validateUsername( account.username ) ) {
+            result = false;
+            msg += ' Username is too short. ';
+        }
+        account._id = uuidv4();
+        account._type = 'account';
+
+        return ({ result, msg, account });        
+    },
+    validateEmail: ( email ) => validator.isEmail( email ),
+    validatePassword: ( password ) => ( password.length >= 8 ),
+    validateUsername: ( username ) => ( username.length >= 3 )
+
 }
 module.exports = accountModel;

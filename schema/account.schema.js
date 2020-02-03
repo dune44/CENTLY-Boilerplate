@@ -1,25 +1,27 @@
 const async = require('wrap-sync');
 const osom = require('osom');
-const validator = require('validator');
+const uuidv4 = require('uuid/v4');
 
 /*
     Model for User login
-    Put secret as a placeholder for possible future security feature.
+    I have put secret as a placeholder for possible future security feature.
     enable2a qruri for Qr code URI 2 stage authentication
 */
-const trim = (str) => str.trim();
-const tlc = (str) => str.toLowerCase();
-const validateUsername = (value) => (value.length > 2);
-const validatePassword = (value) => (value.length > 30);
-const validateEmail = (value) => (validator.isEmail(value));
+const trim = ( str ) => str.trim();
+const tlc = ( str ) => str.toLowerCase();
+const validateUsername = ( value ) => ( value.length > 2 );
+const validatePassword = ( value ) => ( value.length > 30 );
+//const validateEmail = ( value ) => ( validator.isEmail( value ) );
 
 const accountSchema = {
     _id: {
+        default: uuidv4(),
         required: true,
         type: String
     },
     _type: {
-        _type: 'account',
+        default: 'account',
+        required: true,
         type: String
     },
     username: {
@@ -37,8 +39,7 @@ const accountSchema = {
     email: {
         required: true,
         transform: [tlc,trim],
-        type: String,
-        validate: validateEmail
+        type: String
     },
     enable2a: {
      type: Boolean

@@ -14,6 +14,25 @@ let newAccount,
     readAccountByUsernameIDResult;
 const username = 'testuser';
 
+
+function clearAccounts( next ){
+    const q = N1qlQuery.fromString( 'DELETE FROM `'+process.env.BUCKET+'`' );
+    db.query( q, ( e, r, m ) => {
+        if(e){
+            console.log( 'error in deleting test db' )
+            console.log( e );
+        }else{
+            // console.log( 'meta from deleting.' );
+            // console.log( m );
+            //console.log( 'count from deleting.' );
+            //console.log( m.metrics.mutationCount );
+            //console.log( 'test db cleared ' );
+        }
+        //console.log( 'end testing statement.' );
+        next();
+    });
+}
+
 function indexAvailable(next){
     //console.log('testing test indexes.');
     const q1 = N1qlQuery.fromString('SELECT * FROM `'+process.env.BUCKET+'` WHERE `username` = "username" ');
@@ -87,7 +106,6 @@ function initializeBadPasswordAccount( next ) {
         "password":"1A2b6b",
         "email": "dune44@hotmail.com",
     };
-
     accountModel.Create.account(testUser, (badResult) => {
         newBadPasswordAccount = badResult;
         next();
@@ -100,7 +118,6 @@ function initializeBadUsernameAccount( next ){
         "password":"2M@iP931p",
         "email": "dune44@hotmail.com",
     };
-
     accountModel.Create.account(testUser, (badResult) => {
         newBadUsernameAccount = badResult;
         next();
@@ -113,7 +130,6 @@ function initializeBadEmailAccount( next ){
         "password":"2M@iP931p",
         "email": "hotmail.com",
     };
-
     accountModel.Create.account(testUser, (badResult) => {
         newBadEmailAccount = badResult;
         next();
@@ -124,18 +140,20 @@ describe( 'Account Model Create a user account', () => {
 
     before( ( done ) => {
         //console.log( 'Start before statement' );
-        indexAvailable( ( result ) => {
-            if ( !result ) {
-                //console.log( 'build indexes' );
-                buildPrimaryIndex( () => {
-                    buildIndexes( () => {
-                        runDbCalls( done );
+        clearAccounts( () => {
+            indexAvailable( ( result ) => {
+                if ( !result ) {
+                    //console.log( 'build indexes' );
+                    buildPrimaryIndex( () => {
+                        buildIndexes( () => {
+                            runDbCalls( done );
+                        });
                     });
-                });
-            } else {
-                //console.log( 'Indexes built, proceed.' );
-                runDbCalls( done );
-            }
+                } else {
+                    //console.log( 'Indexes built, proceed.' );
+                    runDbCalls( done );
+                }
+            });
         });
     });
 
@@ -226,8 +244,8 @@ describe( 'Account Model Create a user account', () => {
 
 function readTestAccountUsername( next ){
     accountModel.Read.accountByUsername( username, (result) => {
-        console.log('result');
-        console.log(result);
+        //console.log('result');
+        //console.log(result);
         readAccountByUsernameResult = result;
         testAccountUID = result._id;
         next();
@@ -327,6 +345,7 @@ function readTestAccountByUID( next ){
 describe('Account Model Read accountById', () => {
 
     before( ( done ) => {
+        console.log('start acountById before');
         readTestAccountByUID( done );
     });
 
@@ -347,37 +366,3 @@ describe('Account Model Read accountById', () => {
 // describe('Delete', () => {
      
 // });
-
-function clearAccounts( next ){
-    const q = N1qlQuery.fromString( 'DELETE FROM `'+process.env.BUCKET+'`' );
-    db.query( q, ( e, r, m ) => {
-        if(e){
-            //console.log( 'error in deleting test db' )
-            //console.log( e );
-        }else{
-            // console.log( 'meta from deleting.' );
-            // console.log( m );
-            //console.log( 'count from deleting.' );
-            //console.log( m.metrics.mutationCount );
-            //console.log( 'test db cleared ' );
-        }
-        //console.log( 'end testing statement.' );
-        next();
-    });
-}
-
-// Cheat to clear out db after everyother suite is done
-describe( 'Clear out db after tests', () => {
-
-    after( ( done ) => {
-        // Allow some timeout to allow db to settle
-        setTimeout( () => {
-            clearAccounts( done );
-        }, 1000);
-    });
-
-    it( 'should not do anything here.', () => {
-        
-    });
-
-});
