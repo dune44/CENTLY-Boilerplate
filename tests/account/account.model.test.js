@@ -11,9 +11,8 @@ let newAccount,
     newBadEmailAccount,
     readAccountByUsernameResult,
     testAccountUID,
-    readAccountByUsernameIDResult;
+    readAccountByIDResult;
 const username = 'testuser';
-
 
 function clearAccounts( next ){
     const q = N1qlQuery.fromString( 'DELETE FROM `'+process.env.BUCKET+'`' );
@@ -158,7 +157,7 @@ describe( 'Account Model Create a user account', () => {
     });
 
     after( ( done ) => {
-        setTimeout( done, 500);
+        setTimeout( done, 3);
     });
 
     // Property Existance
@@ -248,8 +247,6 @@ describe( 'Account Model Create a user account', () => {
 
 function readTestAccountUsername( next ){
     accountModel.Read.accountByUsername( username, (result) => {
-        //console.log('result');
-        //console.log(result);
         readAccountByUsernameResult = result;
         testAccountUID = result._id;
         next();
@@ -343,22 +340,101 @@ describe( 'Account Model Read accountByUsername', () => {
 });
 
 function readTestAccountByUID( next ){
-
+    accountModel.Read.accountById( testAccountUID, ( result ) => {
+        readAccountByIDResult = result;
+        next();
+    });
 }
-/*
+
 describe('Account Model Read accountById', () => {
 
     before( ( done ) => {
-        console.log('start acountById before');
         readTestAccountByUID( done );
     });
 
-    it('Should return property msg', () => {
-        //expect(readAccount).to.have.property('msg');
+    after( ( done ) => {
+        done();
     });
 
+    // Property Exists
+    it('readAccountByIDResult should return property data', () => {
+        expect(readAccountByIDResult).to.have.property('data');
+    });
+
+    it('readAccountByIDResult should return property data._id', () => {
+        expect(readAccountByIDResult.data).to.have.property('_id');
+    });
+
+    it('readAccountByIDResult should return property data._type', () => {
+        expect(readAccountByIDResult.data).to.have.property('_type');
+    });
+
+    it('readAccountByIDResult should return property data.blocked', () => {
+        expect(readAccountByIDResult.data).to.have.property('blocked');
+    });
+
+    it('readAccountByIDResult should return property data.deleted', () => {
+        expect(readAccountByIDResult.data).to.have.property('deleted');
+    });
+
+    it('readAccountByIDResult should return property data.email', () => {
+        expect(readAccountByIDResult.data).to.have.property('email');
+    });
+
+    it('readAccountByIDResult should NOT return property data.password', () => {
+        expect(readAccountByIDResult.data).to.not.have.property('password');
+    });
+
+    it('readAccountByIDResult should return property data.username', () => {
+        expect(readAccountByIDResult.data).to.have.property('username');
+    });
+
+    it('readAccountByIDResult should NOT return property msg', () => {
+        expect(readAccountByIDResult).to.not.have.property('msg');
+    });
+
+    it('readAccountByIDResult should return property result', () => {
+        expect(readAccountByIDResult).to.have.property('result');
+    });
+
+    // Property Type
+    it( 'readAccountByIDResult email should be a data._id', () => {
+        expect( readAccountByIDResult.data._id ).to.be.a( 'string' );
+    });
+
+    it( 'readAccountByIDResult email should be a data._type', () => {
+        expect( readAccountByIDResult.data._type ).to.be.a( 'string' );
+    });
+
+    it( 'readAccountByIDResult email should be a data.blocked', () => {
+        expect( readAccountByIDResult.data.blocked ).to.be.a( 'boolean' );
+    });
+
+    it( 'readAccountByIDResult email should be a data.deleted', () => {
+        expect( readAccountByIDResult.data.deleted ).to.be.a( 'boolean' );
+    });
+
+    it( 'readAccountByIDResult email should be a data.email', () => {
+        expect( readAccountByIDResult.data.email ).to.be.a( 'string' );
+    });
+
+    it( 'readAccountByIDResult data.username should be a string', () => {
+        expect( readAccountByIDResult.data.username ).to.be.a( 'string' );
+    });
+
+    it( 'readAccountByIDResult result should be a boolean', () => {
+        expect( readAccountByIDResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'readAccountByIDResult result should have result of true', () => {
+        expect( readAccountByIDResult.result ).to.equal( true );
+    });
+
+    // Fails
+
 });
-*/
+
 // describe('Read Validate Credentials', () => {
 
 // });
