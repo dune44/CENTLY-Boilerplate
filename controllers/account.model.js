@@ -2,7 +2,6 @@
 const bcrypt = require('bcryptjs');
 const couchbase = require('couchbase');
 const db = require('./db');
-const moment = require('moment');
 const N1qlQuery = couchbase.N1qlQuery;
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
