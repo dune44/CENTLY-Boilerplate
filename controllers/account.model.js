@@ -25,7 +25,7 @@ const accountModel = {
                                 if( validModel.result ) {
                                     account = validModel.account;
                                     account.password = hash;
-                                    db.insert('account|'+account._id,account, ( e ) => {
+                                    db.insert('account|'+account._id,account, function( e ) {
                                         if(e){
                                             console.log( 'Error: inserting account' );
                                             console.log( e );
@@ -71,9 +71,9 @@ const accountModel = {
             next();
         },
         accountByUsername: ( username, next ) => {
-            const fields = '_id, _type, `email`, `username`';
+            const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
             const q = N1qlQuery.fromString('SELECT '+fields+' FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND username == "' + username + '"');
-            db.query(q, (e, r) => {
+            db.query(q, function(e, r) {
                 if(e){
                     console.log('error in accountModel.Read.accountByUsername');
                     console.log(e);
@@ -81,15 +81,15 @@ const accountModel = {
                 }else{
                     if ( r.length === 1 ) {
                         next({ "data": r[0], "result": true });
-                    } else {
-                        console.log('accountByUsername result');
-                        console.log(r);
+                    } else if (r.length === 0) {
                         const msg = 'Result not found for ' + username;
+                        next({ "msg": msg, "result": false });
+                    } else {
+                        const msg = 'There is a duplicate found for ' + username;
                         next({ "msg": msg, "result": false });
                     }
                 }
             });
-            next();
         },
         all: () => {
 
@@ -147,7 +147,7 @@ const accountModel = {
 const accountMethod = {
     duplicateName: ( username, next ) => {
         const q = N1qlQuery.fromString( 'SELECT * FROM `'+process.env.BUCKET+'` WHERE `username`=$1' );
-        db.query( q, [username], ( e, r ) => {
+        db.query( q, [username], function( e, r ) {
             if(e){
                 console.log( 'error in accountMethod.duplicateName' )
                 console.log( e );
@@ -193,7 +193,8 @@ const accountMethod = {
         }
         account._id = uuidv4();
         account._type = 'account';
-
+        account.blocked = false;
+        account.deleted = false;
         return ({ result, msg, account });        
     },
     validateEmail: ( email ) => validator.isEmail( email ),

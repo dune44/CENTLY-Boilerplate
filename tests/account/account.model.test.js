@@ -17,7 +17,7 @@ const username = 'testuser';
 
 function clearAccounts( next ){
     const q = N1qlQuery.fromString( 'DELETE FROM `'+process.env.BUCKET+'`' );
-    db.query( q, ( e, r, m ) => {
+    db.query( q, function( e ) {
         if(e){
             console.log( 'error in deleting test db' )
             console.log( e );
@@ -36,7 +36,7 @@ function clearAccounts( next ){
 function indexAvailable(next){
     //console.log('testing test indexes.');
     const q1 = N1qlQuery.fromString('SELECT * FROM `'+process.env.BUCKET+'` WHERE `username` = "username" ');
-    db.query(q1, (e,r,m) =>{
+    db.query(q1, function( e, r, m) {
         if(e){
             //console.log('index query failed');
             // console.log('query used:');
@@ -53,7 +53,7 @@ function indexAvailable(next){
 
 function buildPrimaryIndex( next ) {
     const testPKaccount = N1qlQuery.fromString('CREATE PRIMARY INDEX ON `'+process.env.BUCKET+'`');
-    db.query(testPKaccount, (e) => {
+    db.query(testPKaccount, function(e) {
         if(e) {
             //console.log('testPKaccount failed.');
             //console.log(e);
@@ -66,7 +66,7 @@ function buildPrimaryIndex( next ) {
 
 function buildIndexes( next ) {
     const testFKaccount_username =  N1qlQuery.fromString( 'CREATE INDEX testFKaccount_username ON `'+process.env.BUCKET+'`(username) where `_type` == account' );
-    db.query(testFKaccount_username, ( e ) => {
+    db.query(testFKaccount_username, function( e ) {
         if( e ) {
             //console.log( 'testFKaccount_username failed.' );
             //console.log( e );
@@ -155,6 +155,10 @@ describe( 'Account Model Create a user account', () => {
                 }
             });
         });
+    });
+
+    after( ( done ) => {
+        setTimeout( done, 500);
     });
 
     // Property Existance
@@ -341,7 +345,7 @@ describe( 'Account Model Read accountByUsername', () => {
 function readTestAccountByUID( next ){
 
 }
-
+/*
 describe('Account Model Read accountById', () => {
 
     before( ( done ) => {
@@ -354,7 +358,7 @@ describe('Account Model Read accountById', () => {
     });
 
 });
-
+*/
 // describe('Read Validate Credentials', () => {
 
 // });
