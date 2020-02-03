@@ -36,8 +36,8 @@ const accountModel = {
                                         }
                                     });
                                 } else {
-                                    let msg = ' Account validation failed ';
-                                    console.log( msg );
+                                    const msg = ' Account validation failed ';
+                                    //console.log( msg );
                                     next({ "msg": msg, "result": false});
                                 }
                             } else {
@@ -47,7 +47,7 @@ const accountModel = {
                         });
                     }else{
                         const msg = 'Username already in use.';
-                        console.log( msg );
+                        //console.log( msg );
                         next({ "msg": msg, "result": false });
                     }
                 });
@@ -59,20 +59,39 @@ const accountModel = {
         }
     },
     Read: {
-        accountById: (uid) => {
-            // const q = N1qlQuery.fromString('SELECT * FROM `'+process.env.BUCKET+'` WHERE _id=$1');
+        accountById: ( uid, next ) => {
+            // const q = N1qlQuery.fromString('SELECT * FROM `'+process.env.BUCKET+'` WHERE `_id`=$1');
             // db.query(q, [uid], (e, r) => {
             //     if(e){
-            //         console.log('error in accountModel.Read.accountById')
+            //         console.log('error in accountModel.Read.accountById');
             //         console.log(e);
             //         next(false);
             //     }else{
             //         next ( (r.length === 1) ? (r[0]) : false );
             //     }
             // });
+            next();
         },
-        accountByUsername: (username) => {
-
+        accountByUsername: ( username, next ) => {
+            const fields =  '`_id`, `_type`, `email`, `username`';
+            const q = N1qlQuery.fromString('SELECT '+fields+' FROM `'+process.env.BUCKET+'` WHERE `username`=$1');
+            db.query(q, [username], (e, r) => {
+                if(e){
+                    console.log('error in accountModel.Read.accountByUsername');
+                    console.log(e);
+                    next({ "error": e, "msg": 'An error occured', "result": false });
+                }else{
+                    if ( r.length === 1 ) {
+                        next({ "data": r[0], "result": true });
+                    } else {
+                        console.log('accountByUsername result');
+                        console.log(r);
+                        const msg = 'Result not found';
+                        next({ "msg": msg, "result": false });
+                    }
+                }
+            });
+            next();
         },
         all: () => {
 
