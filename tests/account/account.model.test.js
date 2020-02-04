@@ -9,6 +9,7 @@ let newAccount,
     newBadPasswordAccount,
     newBadUsernameAccount,
     newBadEmailAccount,
+    newBadDuplicateNameAccount,
     readAccountByUsernameResult,
     testAccountUID,
     readAccountByIDResult;
@@ -133,6 +134,11 @@ function initializeBadEmailAccount( next ){
         newBadEmailAccount = badResult;
         next();
     });
+}
+
+function attemptDuplicateUsernme( next ) {
+
+    next();
 }
 
 describe( 'Account Model Create a user account', () => {
