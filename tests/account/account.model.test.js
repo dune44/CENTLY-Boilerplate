@@ -157,7 +157,7 @@ describe( 'Account Model Create a user account', () => {
     });
 
     after( ( done ) => {
-        setTimeout( done, 10);
+        setTimeout( done, 3);
     });
 
     // Normal Account Creation
@@ -279,6 +279,53 @@ describe( 'Account Model Create a user account', () => {
 
 });
 
+function attemptDuplicateUsername( next ) {
+  const testUser = {
+    "username": username,
+    "password":"8I3a9B!bc",
+    "email": "fred@somesite.com",
+  };
+  accountModel.Create.account(testUser, ( result ) => {
+    newBadDuplicateNameAccount = result;
+    next();
+  });
+}
+
+describe( 'Account Model Create a duplicate username in account', () => {
+
+  before( ( done ) => {
+    attemptDuplicateUsername( done );
+  });
+
+  after( ( done ) => {
+    done();
+  });
+
+  // Property Existence
+  it( 'newBadDuplicateNameAccount should have property result', () => {
+    expect(newBadDuplicateNameAccount).to.have.property('result');
+  });
+
+  it( 'newBadDuplicateNameAccount should have property msg', () => {
+    expect(newBadDuplicateNameAccount).to.have.property('msg');
+  });
+
+  // Property Type
+  it( 'newBadDuplicateNameAccount result should be a boolean', () => {
+    expect( newBadDuplicateNameAccount.result ).to.have.be.a( 'boolean' );
+  });
+
+  it( 'newBadDuplicateNameAccount msg should be a string', () => {
+    expect( newBadDuplicateNameAccount.msg ).to.have.be.a( 'string' );
+  });
+
+  // Return Value
+  it( 'newBadDuplicateNameAccount should have result of false', () => {
+    expect( newBadDuplicateNameAccount.result ).to.equal( false );
+  });
+
+});
+
 function readTestAccountUsername( next ){
     accountModel.Read.accountByUsername( username, (result) => {
         readAccountByUsernameResult = result;
@@ -296,7 +343,7 @@ describe( 'Account Model Read accountByUsername', () => {
     });
 
     after( ( done ) => {
-        setTimeout( done, 10);
+        setTimeout( done, 1);
     });
 
     // Property Exists
@@ -386,7 +433,7 @@ function readTestAccountByUID( next ){
     });
 }
 
-describe('Account Model Read accountById', () => {
+describe( 'Account Model Read accountById', () => {
 
     before( ( done ) => {
         readTestAccountByUID( done );
@@ -475,6 +522,23 @@ describe('Account Model Read accountById', () => {
 
 });
 
+describe( 'Account Model Read All', () => {
+
+  before( () => {
+
+  });
+
+  after( () => {
+
+  });
+
+  // Porperty Exists
+
+
+
+
+});
+
 // describe('Read Validate Credentials', () => {
 
 // });
@@ -486,50 +550,3 @@ describe('Account Model Read accountById', () => {
 // describe('Delete', () => {
 
 // });
-
-function attemptDuplicateUsername( next ) {
-  const testUser = {
-      "username": username,
-      "password":"8I3a9B!bc",
-      "email": "fred@somesite.com",
-  };
-  accountModel.Create.account(testUser, ( result ) => {
-      newBadDuplicateNameAccount = result;
-      next();
-  });
-}
-
-describe( 'Account Model Create a duplicate username in account', () => {
-
-  before( ( done ) => {
-    attemptDuplicateUsername( done );
-  });
-
-  after( ( done ) => {
-    done();
-  });
-
-  // Property Existence
-  it( 'newBadDuplicateNameAccount should have property result', () => {
-    expect(newBadDuplicateNameAccount).to.have.property('result');
-  });
-
-  it( 'newBadDuplicateNameAccount should have property msg', () => {
-    expect(newBadDuplicateNameAccount).to.have.property('msg');
-  });
-
-  // Property Type
-  it( 'newBadDuplicateNameAccount result should be a boolean', () => {
-      expect( newBadDuplicateNameAccount.result ).to.have.be.a( 'boolean' );
-  });
-
-  it( 'newBadDuplicateNameAccount msg should be a string', () => {
-      expect( newBadDuplicateNameAccount.msg ).to.have.be.a( 'string' );
-  });
-
-  // Return Value
-  it( 'newBadDuplicateNameAccount should have result of false', () => {
-      expect( newBadDuplicateNameAccount.result ).to.equal( false );
-  });
-
-});
