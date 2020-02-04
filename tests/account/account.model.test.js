@@ -8,11 +8,8 @@ const expect = chai.expect;
 let newAccount,
     newBadPasswordAccount,
     newBadUsernameAccount,
-    newBadEmailAccount,
-    newBadDuplicateNameAccount,
-    readAccountByUsernameResult,
-    testAccountUID,
-    readAccountByIDResult;
+    newBadEmailAccount;
+    
 const username = 'testuser';
 
 function clearAccounts( next ){
@@ -157,7 +154,7 @@ describe( 'Account Model Create a user account', () => {
     });
 
     after( ( done ) => {
-        setTimeout( done, 3);
+        setTimeout( done, 10);
     });
 
     // Normal Account Creation
@@ -279,6 +276,8 @@ describe( 'Account Model Create a user account', () => {
 
 });
 
+let newBadDuplicateNameAccount;
+
 function attemptDuplicateUsername( next ) {
   const testUser = {
     "username": username,
@@ -325,6 +324,8 @@ describe( 'Account Model Create a duplicate username in account', () => {
   });
 
 });
+
+let readAccountByUsernameResult, testAccountUID;
 
 function readTestAccountUsername( next ){
     accountModel.Read.accountByUsername( username, (result) => {
@@ -426,6 +427,8 @@ describe( 'Account Model Read accountByUsername', () => {
 
 });
 
+let readAccountByIDResult;
+
 function readTestAccountByUID( next ){
     accountModel.Read.accountById( testAccountUID, ( result ) => {
         readAccountByIDResult = result;
@@ -521,6 +524,8 @@ describe( 'Account Model Read accountById', () => {
     // Fails
 
 });
+
+
 
 describe( 'Account Model Read All', () => {
 
