@@ -91,13 +91,12 @@ function initializeAccount( next ) {
     const testUser = {
         "username": username,
         "password":"1A2b6O!b",
-        "email": "dune44@hotmail.com",
+        "email": "bob@somesite.com",
     };
-    accountModel.Create.account(testUser, (goodResult) => {
+    accountModel.Create.account( testUser, ( goodResult ) => {
         newAccount = goodResult;
         next();
     });
-
 }
 
 function initializeBadPasswordAccount( next ) {
@@ -136,11 +135,6 @@ function initializeBadEmailAccount( next ){
     });
 }
 
-function attemptDuplicateUsernme( next ) {
-
-    next();
-}
-
 describe( 'Account Model Create a user account', () => {
 
     before( ( done ) => {
@@ -163,10 +157,11 @@ describe( 'Account Model Create a user account', () => {
     });
 
     after( ( done ) => {
-        setTimeout( done, 30);
+        setTimeout( done, 10);
     });
 
-    // Property Existance
+    // Normal Account Creation
+    // Property Existence
     it( 'newAccount data should have property email', () => {
         expect( newAccount.data ).to.have.property( 'email' );
     });
@@ -208,9 +203,10 @@ describe( 'Account Model Create a user account', () => {
     it( 'newAccount should have a username longer than 3', () => {
         expect( newAccount.data.username ).to.have.lengthOf.at.least( 3 );
     });
-    
+
     // Failures
     // Bad Password - Account
+    // Property Existence
     it( 'newBadPasswordAccount should contain an error message', () => {
         expect( newBadPasswordAccount ).to.have.property( 'msg' );
     });
@@ -219,11 +215,22 @@ describe( 'Account Model Create a user account', () => {
         expect( newBadPasswordAccount ).to.have.property( 'result' );
     });
 
+    // Property Type
+    it( 'newBadPasswordAccount result should be a boolean', () => {
+        expect( newBadPasswordAccount.result ).to.have.be.a( 'boolean' );
+    });
+
+    it( 'newBadPasswordAccount msg should be a string', () => {
+        expect( newBadPasswordAccount.msg ).to.have.be.a( 'string' );
+    });
+
+    // Return Value
     it( 'newBadPasswordAccount should have result of false', () => {
         expect( newBadPasswordAccount.result ).to.equal( false );
     });
 
     // Short Username - Account
+    // Property Existence
     it( 'newBadUsernameAccount should contain an error message', () => {
         expect( newBadUsernameAccount ).to.have.property( 'msg' );
     });
@@ -232,11 +239,22 @@ describe( 'Account Model Create a user account', () => {
         expect( newBadUsernameAccount ).to.have.property( 'result' );
     });
 
+    // Property Type
+    it( 'newBadUsernameAccount result should be a boolean', () => {
+        expect( newBadUsernameAccount.result ).to.have.be.a( 'boolean' );
+    });
+
+    it( 'newBadUsernameAccount msg should be a string', () => {
+        expect( newBadUsernameAccount.msg ).to.have.be.a( 'string' );
+    });
+
+    // Return Value
     it( 'newBadUsernameAccount should have result of false', () => {
         expect( newBadUsernameAccount.result ).to.equal( false );
     });
 
     // Bad email - Account
+    // Property Existence
     it( 'newBadEmailAccount should contain an error message', () => {
         expect( newBadEmailAccount ).to.have.property( 'msg' );
     });
@@ -245,6 +263,16 @@ describe( 'Account Model Create a user account', () => {
         expect( newBadEmailAccount ).to.have.property( 'result' );
     });
 
+    // Property Type
+    it( 'newBadEmailAccount result should be a boolean', () => {
+        expect( newBadEmailAccount.result ).to.have.be.a( 'boolean' );
+    });
+
+    it( 'newBadEmailAccount msg should be a string', () => {
+        expect( newBadEmailAccount.msg ).to.have.be.a( 'string' );
+    });
+
+    // Return Value
     it( 'newBadEmailAccount should have result of false', () => {
         expect( newBadEmailAccount.result ).to.equal( false );
     });
@@ -266,9 +294,9 @@ describe( 'Account Model Read accountByUsername', () => {
     before( ( done ) => {
         readTestAccountUsername( done );
     });
-    
+
     after( ( done ) => {
-        setTimeout( done, 30);
+        setTimeout( done, 10);
     });
 
     // Property Exists
@@ -456,5 +484,52 @@ describe('Account Model Read accountById', () => {
 // });
 
 // describe('Delete', () => {
-     
+
 // });
+
+function attemptDuplicateUsername( next ) {
+  const testUser = {
+      "username": username,
+      "password":"8I3a9B!bc",
+      "email": "fred@somesite.com",
+  };
+  accountModel.Create.account(testUser, ( result ) => {
+      newBadDuplicateNameAccount = result;
+      next();
+  });
+}
+
+describe( 'Account Model Create a duplicate username in account', () => {
+
+  before( ( done ) => {
+    attemptDuplicateUsername( done );
+  });
+
+  after( ( done ) => {
+    done();
+  });
+
+  // Property Existence
+  it( 'newBadDuplicateNameAccount should have property result', () => {
+    expect(newBadDuplicateNameAccount).to.have.property('result');
+  });
+
+  it( 'newBadDuplicateNameAccount should have property msg', () => {
+    expect(newBadDuplicateNameAccount).to.have.property('msg');
+  });
+
+  // Property Type
+  it( 'newBadDuplicateNameAccount result should be a boolean', () => {
+      expect( newBadDuplicateNameAccount.result ).to.have.be.a( 'boolean' );
+  });
+
+  it( 'newBadDuplicateNameAccount msg should be a string', () => {
+      expect( newBadDuplicateNameAccount.msg ).to.have.be.a( 'string' );
+  });
+
+  // Return Value
+  it( 'newBadDuplicateNameAccount should have result of false', () => {
+      expect( newBadDuplicateNameAccount.result ).to.equal( false );
+  });
+
+});

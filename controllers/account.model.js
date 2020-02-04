@@ -10,7 +10,7 @@ const validator = require('validator');
 
 const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
 
-// Test to make sure newer couchbase have flushed api. 
+// Test to make sure newer couchbase have flushed api.
 //const collection = db.collection(process.env.BUCKET);
 // console.log(N1qlQuery);
 
@@ -19,7 +19,7 @@ const accountModel = {
         account: ( account, next ) => {
             if( !accountMethod.disallowedName( account.username ) ) {
                 accountMethod.duplicateName( account.username, ( duplicate ) => {
-                    if(!duplicate){
+                    if( !duplicate ) {
                         accountMethod.ink(account.password, ( hash, inkmsg ) => {
                             if( hash ) {
                                 const validModel = accountMethod.preValidateModel( account );
@@ -41,7 +41,7 @@ const accountModel = {
                             } else {
                                 next({ "msg": inkmsg, "result": false });
                             }
-                            
+
                         });
                     }else{
                         const msg = 'Username already in use.';
@@ -50,7 +50,6 @@ const accountModel = {
                 });
             }else{
                 const msg = 'Username is not allowed.';
-                console.log( msg );
                 next({ "msg": msg, "result": false });
             }
         }
@@ -91,7 +90,7 @@ const accountModel = {
                         const msg = 'There is a duplicate found for ' + username;
                         next({ "msg": msg, "result": false });
                     }
-                    
+
                 }
             });
         },
@@ -123,7 +122,7 @@ const accountModel = {
         },
         token: async (account, ips) => {
             const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, '7 days' );
-        
+
             // add token to account with their current ip.
             // add a forwarded IP to check if user has a proxy.
             account.tokens = account.tokens.concat({
@@ -133,9 +132,9 @@ const accountModel = {
                     fwdIP: ips.fwdIP
                 }
             });
-        
+
             await collection.Update({_id: account._id},account);
-        
+
             return token;
         },
         twoStep: () => {
@@ -150,16 +149,9 @@ const accountModel = {
 };
 const accountMethod = {
     duplicateName: ( username, next ) => {
-        const q = N1qlQuery.fromString( 'SELECT * FROM `'+process.env.BUCKET+'` WHERE `username`=$1' );
-        db.query( q, [username], function( e, r ) {
-            if(e){
-                console.log( 'error in accountMethod.duplicateName' )
-                console.log( e );
-                next( true );
-            }else{
-                next( (r.length > 0) );
-            }
-        });
+      accountModel.Read.accountByUsername( username, ( r ) => {
+        next( r.result );
+      });
     },
     disallowedName: ( username ) => {
         const nameList =[
@@ -199,7 +191,7 @@ const accountMethod = {
         account._type = 'account';
         account.blocked = false;
         account.deleted = false;
-        return ({ result, msg, account });        
+        return ({ result, msg, account });
     },
     validateEmail: ( email ) => validator.isEmail( email ),
     validatePassword: ( password ) => ( password.length >= 8 ),
