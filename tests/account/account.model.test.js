@@ -157,7 +157,7 @@ describe( 'Account Model Create a user account', () => {
     });
 
     after( ( done ) => {
-        setTimeout( done, 3);
+        setTimeout( done, 30);
     });
 
     // Property Existance
@@ -248,7 +248,9 @@ describe( 'Account Model Create a user account', () => {
 function readTestAccountUsername( next ){
     accountModel.Read.accountByUsername( username, (result) => {
         readAccountByUsernameResult = result;
-        testAccountUID = result._id;
+        testAccountUID = result.data._id;
+        // console.log( 'testAccountUID' );
+        // console.log( testAccountUID );
         next();
     });
 }
@@ -257,6 +259,10 @@ describe( 'Account Model Read accountByUsername', () => {
 
     before( ( done ) => {
         readTestAccountUsername( done );
+    });
+    
+    after( ( done ) => {
+        setTimeout( done, 30);
     });
 
     // Property Exists

@@ -8,6 +8,8 @@ const QRCode = require('qrcode');
 const uuidv4 = require('uuid/v4');
 const validator = require('validator');
 
+const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
+
 // Test to make sure newer couchbase have flushed api. 
 //const collection = db.collection(process.env.BUCKET);
 // console.log(N1qlQuery);
@@ -34,7 +36,6 @@ const accountModel = {
                                         }
                                     });
                                 } else {
-                                    console.log( validModel.msg );
                                     next({ "msg": validModel.msg, "result": false});
                                 }
                             } else {
@@ -44,7 +45,6 @@ const accountModel = {
                         });
                     }else{
                         const msg = 'Username already in use.';
-                        //console.log( msg );
                         next({ "msg": msg, "result": false });
                     }
                 });
@@ -57,21 +57,25 @@ const accountModel = {
     },
     Read: {
         accountById: ( uid, next ) => {
-            // const q = N1qlQuery.fromString('SELECT * FROM `'+process.env.BUCKET+'` WHERE `_id`=$1');
-            // db.query(q, [uid], (e, r) => {
-            //     if(e){
-            //         console.log('error in accountModel.Read.accountById');
-            //         console.log(e);
-            //         next(false);
-            //     }else{
-            //         next ( (r.length === 1) ? (r[0]) : false );
-            //     }
-            // });
-            next();
+            const q = N1qlQuery.fromString('SELECT ' +  fields + ' FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '" ');
+            db.query(q, (e, r) => {
+                if(e){
+                    console.log('error in accountModel.Read.accountById');
+                    console.log(e);
+                    next({ "msg": e, "result": false});
+                }else{
+                    if( r.length === 1 ) {
+                        next({ "data": r[0], "result": true });
+                    } else if( r.length === 0 ) {
+                        next({ "msg": 'no user found.', "result": false });
+                    } else {
+                        next({ "msg": 'Unexpected result', "result": false });
+                    }
+                }
+            });
         },
         accountByUsername: ( username, next ) => {
-            const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
-            const q = N1qlQuery.fromString('SELECT '+fields+' FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND username == "' + username + '"');
+            const q = N1qlQuery.fromString('SELECT '+fields+' FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND `username` == "' + username + '"');
             db.query(q, function(e, r) {
                 if(e){
                     console.log('error in accountModel.Read.accountByUsername');
@@ -87,6 +91,7 @@ const accountModel = {
                         const msg = 'There is a duplicate found for ' + username;
                         next({ "msg": msg, "result": false });
                     }
+                    
                 }
             });
         },
