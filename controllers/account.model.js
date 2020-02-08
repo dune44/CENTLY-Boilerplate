@@ -94,8 +94,22 @@ const accountModel = {
                 }
             });
         },
-        all: () => {
-
+        all: ( next ) => {
+          const q = N1qlQuery.fromString('SELECT '+fields+' FROM `'+process.env.BUCKET+'` WHERE _type == "account" ');
+          db.query(q, function(e, r) {
+              if(e){
+                  console.log('error in accountModel.Read.all');
+                  console.log(e);
+                  next({ "error": e, "msg": 'An error occured', "result": false });
+              }else{
+                  if ( r.length > 0 ) {
+                      next({ "data": r, "result": true });
+                  } else {
+                      const msg = 'There are no results found ';
+                      next({ "msg": msg, "result": false });
+                  }
+              }
+          });
         },
         rolesById: (uid) => {
 
@@ -103,11 +117,11 @@ const accountModel = {
         isInRole: (uid,role) => {
 
         },
-        validateAccount: async (account) => {
-            if (account.isModified('password')){
-                account.password = await bcrypt.hash(account.password, 8);
+        validateAccount: async ( account ) => {
+            if ( account.isModified( 'password' ) ) {
+                account.password = await bcrypt.hash( account.password, 8);
             }
-            next();
+            next(  );
         }
     },
     Update: {

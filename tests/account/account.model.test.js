@@ -9,7 +9,7 @@ let newAccount,
     newBadPasswordAccount,
     newBadUsernameAccount,
     newBadEmailAccount;
-    
+
 const username = 'testuser';
 
 function clearAccounts( next ){
@@ -64,12 +64,12 @@ function buildPrimaryIndex( next ) {
 function buildIndexes( next ) {
     const testFKaccount_username =  N1qlQuery.fromString( 'CREATE INDEX testFKaccount_username ON `'+process.env.BUCKET+'`(username) where `_type` == account' );
     db.query(testFKaccount_username, function( e ) {
-        if( e ) {
+        //if( e ) {
             //console.log( 'testFKaccount_username failed.' );
             //console.log( e );
-        } else {
+        //} else {
             //console.log( 'testFKaccount_username should be added.' );
-        }
+        //}
         next();
     });
 }
@@ -488,27 +488,27 @@ describe( 'Account Model Read accountById', () => {
     });
 
     // Property Type
-    it( 'readAccountByIDResult email should be a data._id', () => {
+    it( 'readAccountByIDResult data id should be a string', () => {
         expect( readAccountByIDResult.data._id ).to.be.a( 'string' );
     });
 
-    it( 'readAccountByIDResult email should be a data._type', () => {
+    it( 'readAccountByIDResult data _type should be a string', () => {
         expect( readAccountByIDResult.data._type ).to.be.a( 'string' );
     });
 
-    it( 'readAccountByIDResult email should be a data.blocked', () => {
+    it( 'readAccountByIDResult data blocked should be a boolean', () => {
         expect( readAccountByIDResult.data.blocked ).to.be.a( 'boolean' );
     });
 
-    it( 'readAccountByIDResult email should be a data.deleted', () => {
+    it( 'readAccountByIDResult data deleted should be a boolean', () => {
         expect( readAccountByIDResult.data.deleted ).to.be.a( 'boolean' );
     });
 
-    it( 'readAccountByIDResult email should be a data.email', () => {
+    it( 'readAccountByIDResult data email should be a string', () => {
         expect( readAccountByIDResult.data.email ).to.be.a( 'string' );
     });
 
-    it( 'readAccountByIDResult data.username should be a string', () => {
+    it( 'readAccountByIDResult data username should be a string', () => {
         expect( readAccountByIDResult.data.username ).to.be.a( 'string' );
     });
 
@@ -525,33 +525,53 @@ describe( 'Account Model Read accountById', () => {
 
 });
 
+let readAllResult;
 
+function readAllAccounts( next ) {
+    accountModel.Read.all( ( result ) => {
+      readAllResult = result;
+      next();
+    });
+}
 
 describe( 'Account Model Read All', () => {
 
-  before( () => {
-
+  before( ( done ) => {
+    readAllAccounts( done );
   });
 
-  after( () => {
-
+  after( ( done ) => {
+    done();
   });
 
   // Porperty Exists
+  it( 'readAllResult should NOT have property msg', () => {
+    expect(readAllResult).to.have.not.property('msg');
+  });
 
+  it('readAllResult should have property data', () => {
+      expect(readAllResult).to.have.property('data');
+  });
 
+  it('readAllResult should have property result', () => {
+      expect(readAllResult).to.have.property('result');
+  });
 
+  // Property Type
+  it( 'readAllResult data should be an Array', () => {
+      expect( readAllResult.data ).to.be.a( 'array' );
+  });
 
 });
 
-// describe('Read Validate Credentials', () => {
+describe('Account Model Read Validate Credentials', () => {
 
-// });
+});
 
-// describe('Update', () => {
+describe('Update', () => {
 
-// });
+});
 
-// describe('Delete', () => {
+describe('Delete', () => {
 
-// });
+});
