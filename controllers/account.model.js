@@ -118,7 +118,30 @@ const accountModel = {
 
         },
         validateAccount: ( account, next ) => {
-          next( { data: false } );
+          const validationerrmsg = 'Account validation failed.';
+          const q = N1qlQuery.fromString('SELECT `password` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND `username` == "' + account.username + '"');
+          db.query(q, function(e, r) {
+            if(e){
+              console.log('error in accountModel.Read.validateAccount');
+              console.log(e);
+              next({ "error": e, "msg": 'An error occured', "result": false });
+            }else{
+              if ( r.length === 1 ) {
+                    accountMethod.passwordCompare( account.password, r[0].password, ( result ) => {
+                      if( result ){
+                        next({ "result": result });
+                      } else {
+                        next({ "msg": validationerrmsg, "result": false });
+                      }
+                    });
+              } else if( r.length === 0 ) {
+                next({ "msg": validationerrmsg, "result": false });
+              } else {
+                console.log('unexpected length of ' + r.length);
+                next({ "msg": "data length unexpected.", "result": false });
+              }
+            }
+        });
         }
     },
     Update: {
@@ -131,22 +154,22 @@ const accountModel = {
         role: () => {
 
         },
-        token: async (account, ips) => {
-            const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, '7 days' );
+        token: (account, ips) => {
+            // const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, '7 days' );
 
             // add token to account with their current ip.
             // add a forwarded IP to check if user has a proxy.
-            account.tokens = account.tokens.concat({
-                token: token,
-                ips: {
-                    ip:ips.ip,
-                    fwdIP: ips.fwdIP
-                }
-            });
-
-            await collection.Update({_id: account._id},account);
-
-            return token;
+            // account.tokens = account.tokens.concat({
+            //     token: token,
+            //     ips: {
+            //         ip:ips.ip,
+            //         fwdIP: ips.fwdIP
+            //     }
+            // });
+            //
+            // collection.Update({_id: account._id},account);
+            //
+            // return token;
         },
         twoStep: () => {
 
@@ -184,6 +207,16 @@ const accountMethod = {
             });
         });
     },
+    passwordCompare: ( pwd, hash, done ) => {
+      bcrypt.compare( pwd, hash, function( e, r ) {
+        if( e ) {
+          console.log(' Error accountMethod passwordCompare');
+          console.log( e );
+        } else {
+          done( r );
+        }
+      });
+    },
     preValidateModel: ( account ) => {
         let result = true, msg = '';
         if( !accountMethod.validateEmail( account.email ) ) {
@@ -206,7 +239,7 @@ const accountMethod = {
     },
     validateEmail: ( email ) => validator.isEmail( email ),
     validatePassword: ( password ) => ( password.length >= 8 ),
-    validateUsername: ( username ) => ( username.length >= 3 )
+    validateUsername: ( username ) => ( username.length >= 3 ),
 
-}
+};
 module.exports = accountModel;

@@ -10,7 +10,8 @@ let newAccount,
     newBadUsernameAccount,
     newBadEmailAccount;
 
-const username = 'testuser';
+    const username = 'testuser';
+    const password = '1A2b6O!b';
 
 function clearAccounts( next ){
     const q = N1qlQuery.fromString( 'DELETE FROM `'+process.env.BUCKET+'`' );
@@ -87,7 +88,7 @@ function runDbCalls( next ){
 function initializeAccount( next ) {
     const testUser = {
         "username": username,
-        "password":"1A2b6O!b",
+        "password": password,
         "email": "bob@somesite.com",
     };
     accountModel.Create.account( testUser, ( goodResult ) => {
@@ -565,11 +566,12 @@ describe( 'Account Model Read All', () => {
 });
 
 let badUsernameLoginResult, badPasswordLoginResult, goodLogingResult;
+const validationerrmsg = 'Account validation failed.';
 
 function attemptbadUsernameLogin( next ) {
   const testUser = {
       "username": "babbadleroybrown",
-      "password":"85Ie!ki49p",
+      "password": "85Ie!ki49p",
   };
   accountModel.Read.validateAccount( testUser, ( result ) => {
     badUsernameLoginResult = result;
@@ -579,8 +581,8 @@ function attemptbadUsernameLogin( next ) {
 
 function attemptbadPasswordLogin( next ) {
   const testUser = {
-      "username": "testuser3",
-      "password":"2M@55iP931p",
+      "username": username,
+      "password": "2M@55iP931p",
   };
   accountModel.Read.validateAccount( testUser, ( result ) => {
     badPasswordLoginResult = result;
@@ -590,8 +592,8 @@ function attemptbadPasswordLogin( next ) {
 
 function attemptGoodLogin( next ) {
   const testUser = {
-      "username": "testuser3",
-      "password":"2M@iP931p",
+      "username": username,
+      "password": password,
   };
   accountModel.Read.validateAccount( testUser, ( result ) => {
     goodLogingResult = result;
@@ -676,13 +678,21 @@ describe('Account Model Read Validate Credentials', () => {
   });
 
   // Return Value -- Bad Username ( badUsernameLoginResult )
-  it( 'badUsernameLoginResult should have result of false', () => {
+  it( 'badUsernameLoginResult result should have result of false', () => {
       expect( badUsernameLoginResult.result ).to.equal( false );
+  });
+
+  it( 'badUsernameLoginResult msg should have result of validationerrmsg', () => {
+      expect( badUsernameLoginResult.msg ).to.equal( validationerrmsg );
   });
 
   // Return Value -- Bad Password ( badPasswordLoginResult )
   it( 'badPasswordLoginResult should have result of false', () => {
       expect( badPasswordLoginResult.result ).to.equal( false );
+  });
+
+  it( 'badPasswordLoginResult msg should have result of validationerrmsg', () => {
+      expect( badPasswordLoginResult.msg ).to.equal( validationerrmsg );
   });
 
   // Return Value -- Good Login ( goodLogingResult )
