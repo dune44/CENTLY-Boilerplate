@@ -117,11 +117,8 @@ const accountModel = {
         isInRole: (uid,role) => {
 
         },
-        validateAccount: async ( account ) => {
-            if ( account.isModified( 'password' ) ) {
-                account.password = await bcrypt.hash( account.password, 8);
-            }
-            next(  );
+        validateAccount: ( account, next ) => {
+          next( { data: false } );
         }
     },
     Update: {
