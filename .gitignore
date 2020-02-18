@@ -4,6 +4,8 @@
 .gitignore
 coverage
 
+# Unneeded files
+package-lock.json
 
 # Logs
 logs

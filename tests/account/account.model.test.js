@@ -16,7 +16,7 @@ function clearAccounts( next ){
     const q = N1qlQuery.fromString( 'DELETE FROM `'+process.env.BUCKET+'`' );
     db.query( q, function( e ) {
         if(e){
-            console.log( 'error in deleting test db' )
+            console.log( 'error in deleting test db' );
             console.log( e );
         }else{
             // console.log( 'meta from deleting.' );
