@@ -615,92 +615,118 @@ describe('Account Model Read Validate Credentials', () => {
     done();
   });
 
-  // Property Existence -- Bad Username ( badUsernameLoginResult )
-  it( 'badUsernameLoginResult should NOT have property data', () => {
+  describe( 'Test Bad Username', () => {
+    // Property Existence -- ( badUsernameLoginResult )
+    it( 'badUsernameLoginResult should NOT have property data', () => {
       expect( badUsernameLoginResult ).to.not.have.property( 'data' );
-  });
+    });
 
-  it( 'badUsernameLoginResult should have property result', () => {
+    it( 'badUsernameLoginResult should NOT have property token', () => {
+      expect( badUsernameLoginResult ).to.not.have.property( 'token' );
+    });
+
+    it( 'badUsernameLoginResult should have property result', () => {
       expect( badUsernameLoginResult ).to.have.property( 'result' );
-  });
+    });
 
-  it( 'badUsernameLoginResult should have property msg', () => {
+    it( 'badUsernameLoginResult should have property msg', () => {
       expect( badUsernameLoginResult ).to.have.property( 'msg' );
-  });
+    });
 
-  // Property Existence -- Bad Password ( badPasswordLoginResult )
-  it( 'badPasswordLoginResult should NOT have property data', () => {
-      expect( badPasswordLoginResult ).to.not.have.property( 'data' );
-  });
-
-  it( 'badPasswordLoginResult should have property result', () => {
-      expect( badPasswordLoginResult ).to.have.property( 'result' );
-  });
-
-  it( 'badPasswordLoginResult should have property msg', () => {
-      expect( badPasswordLoginResult ).to.have.property( 'msg' );
-  });
-
-  // Property Existence -- Good Login ( goodLogingResult )
-  it( 'goodLogingResult should NOT have property data', () => {
-      expect( goodLogingResult ).to.not.have.property( 'data' );
-  });
-
-  it( 'goodLogingResult should NOT have property msg', () => {
-      expect( goodLogingResult ).to.not.have.property( 'msg' );
-  });
-
-  it( 'goodLogingResult should have property result', () => {
-      expect( goodLogingResult ).to.have.property( 'result' );
-  });
-
-  // Property Type -- Bad Username ( badUsernameLoginResult )
-  it( 'badUsernameLoginResult result should be an Boolean', () => {
+    // Property Type -- ( badUsernameLoginResult )
+    it( 'badUsernameLoginResult result should be an Boolean', () => {
       expect( badUsernameLoginResult.result ).to.be.a( 'boolean' );
-  });
+    });
 
-  it( 'badUsernameLoginResult msg should be an String', () => {
+    it( 'badUsernameLoginResult msg should be an String', () => {
       expect( badUsernameLoginResult.msg ).to.be.a( 'string' );
-  });
+    });
 
-  // Property Type -- Bad Password ( badPasswordLoginResult )
-  it( 'badPasswordLoginResult result should be an Boolean', () => {
-      expect( badPasswordLoginResult.result ).to.be.a( 'boolean' );
-  });
-
-  it( 'badPasswordLoginResult msg should be an String', () => {
-      expect( badPasswordLoginResult.msg ).to.be.a( 'string' );
-  });
-
-  // Property Type -- Good Login ( goodLogingResult )
-  it( 'goodLogingResult result should be an Boolean', () => {
-      expect( goodLogingResult.result ).to.be.a( 'boolean' );
-  });
-
-  // Return Value -- Bad Username ( badUsernameLoginResult )
-  it( 'badUsernameLoginResult result should have result of false', () => {
+    // Return Value -- ( badUsernameLoginResult )
+    it( 'badUsernameLoginResult result should have result of false', () => {
       expect( badUsernameLoginResult.result ).to.equal( false );
-  });
+    });
 
-  it( 'badUsernameLoginResult msg should have result of validationerrmsg', () => {
+    it( 'badUsernameLoginResult msg should have result of validationerrmsg', () => {
       expect( badUsernameLoginResult.msg ).to.equal( validationerrmsg );
+    });
+
   });
 
-  // Return Value -- Bad Password ( badPasswordLoginResult )
-  it( 'badPasswordLoginResult should have result of false', () => {
+  describe( 'Test Bad Password', () => {
+    // Property Existence -- ( badPasswordLoginResult )
+    it( 'badPasswordLoginResult should NOT have property data', () => {
+      expect( badPasswordLoginResult ).to.not.have.property( 'data' );
+    });
+
+    it( 'badPasswordLoginResult should NOT have property token', () => {
+      expect( badPasswordLoginResult ).to.not.have.property( 'token' );
+    });
+
+    it( 'badPasswordLoginResult should have property result', () => {
+      expect( badPasswordLoginResult ).to.have.property( 'result' );
+    });
+
+    it( 'badPasswordLoginResult should have property msg', () => {
+      expect( badPasswordLoginResult ).to.have.property( 'msg' );
+    });
+
+    // Property Type -- ( badPasswordLoginResult )
+    it( 'badPasswordLoginResult result should be an Boolean', () => {
+      expect( badPasswordLoginResult.result ).to.be.a( 'boolean' );
+    });
+
+    it( 'badPasswordLoginResult msg should be an String', () => {
+      expect( badPasswordLoginResult.msg ).to.be.a( 'string' );
+    });
+
+    // Return Value -- ( badPasswordLoginResult )
+    it( 'badPasswordLoginResult should have result of false', () => {
       expect( badPasswordLoginResult.result ).to.equal( false );
-  });
+    });
 
-  it( 'badPasswordLoginResult msg should have result of validationerrmsg', () => {
+    it( 'badPasswordLoginResult msg should have result of validationerrmsg', () => {
       expect( badPasswordLoginResult.msg ).to.equal( validationerrmsg );
+    });
+
   });
 
-  // Return Value -- Good Login ( goodLogingResult )
-  it( 'goodLogingResult should have result of true', () => {
+  describe( 'Test good login', () => {
+    // Property Existence -- ( goodLogingResult )
+    it( 'goodLogingResult should NOT have property data', () => {
+      expect( goodLogingResult ).to.not.have.property( 'data' );
+    });
+
+    it( 'goodLogingResult should NOT have property msg', () => {
+      expect( goodLogingResult ).to.not.have.property( 'msg' );
+    });
+
+    it( 'goodLogingResult should have property result', () => {
+      expect( goodLogingResult ).to.have.property( 'result' );
+    });
+
+    it( 'goodLogingResult should have property token', () => {
+      expect( goodLogingResult ).to.have.property( 'token' );
+    });
+
+    // Property Type -- ( goodLogingResult )
+    it( 'goodLogingResult result should be an Boolean', () => {
+      expect( goodLogingResult.result ).to.be.a( 'boolean' );
+    });
+
+    it( 'goodLogingResult token should be an String', () => {
+      expect( goodLogingResult.token ).to.be.a( 'string' );
+    });
+
+    // Return Value -- ( goodLogingResult )
+    it( 'goodLogingResult should have result of true', () => {
       expect( goodLogingResult.result ).to.equal( true );
+    });
+
   });
 
 });
+
 
 describe('Update', () => {
 

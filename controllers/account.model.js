@@ -119,7 +119,7 @@ const accountModel = {
         },
         validateAccount: ( account, next ) => {
           const validationerrmsg = 'Account validation failed.';
-          const q = N1qlQuery.fromString('SELECT `password` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND `username` == "' + account.username + '"');
+          const q = N1qlQuery.fromString('SELECT _id, `password` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND `username` == "' + account.username + '"');
           db.query(q, function(e, r) {
             if(e){
               console.log('error in accountModel.Read.validateAccount');
@@ -129,13 +129,15 @@ const accountModel = {
               if ( r.length === 1 ) {
                     accountMethod.passwordCompare( account.password, r[0].password, ( result ) => {
                       if( result ){
-                        next({ "result": result });
+                        accountModel.Update.token( account, ( token ) => {
+                          next({ "result": result });
+                        });
                       } else {
-                        next({ "msg": validationerrmsg, "result": false });
+                        next({ "msg": validationerrmsg, "result": false, "token": false });
                       }
                     });
               } else if( r.length === 0 ) {
-                next({ "msg": validationerrmsg, "result": false });
+                next({ "msg": validationerrmsg, "result": false, "token": false });
               } else {
                 console.log('unexpected length of ' + r.length);
                 next({ "msg": "data length unexpected.", "result": false });
@@ -151,14 +153,14 @@ const accountModel = {
         password: () => {
 
         },
-        role: () => {
+        role: ( uid, role, next ) => {
 
         },
-        token: (account, ips) => {
-            // const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, '7 days' );
-
-            // add token to account with their current ip.
-            // add a forwarded IP to check if user has a proxy.
+        token: ( account, next ) => {
+            // const token = jwt.sign({ _id: account.user._id.toString() }, process.env.JWT_SECRET, '7 days' );
+            //
+            // // add token to account with their current ip.
+            // // add a forwarded IP to check if user has a proxy.
             // account.tokens = account.tokens.concat({
             //     token: token,
             //     ips: {
@@ -169,7 +171,8 @@ const accountModel = {
             //
             // collection.Update({_id: account._id},account);
             //
-            // return token;
+            //next( token );
+            next( false );
         },
         twoStep: () => {
 
