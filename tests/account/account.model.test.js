@@ -567,11 +567,12 @@ describe( 'Account Model Read All', () => {
 
 let badUsernameLoginResult, badPasswordLoginResult, goodLogingResult;
 const validationerrmsg = 'Account validation failed.';
-
+const fauxIPS = { "ip": "10.0.0.0", "fwdIP": "5.0.0.0" };
 function attemptbadUsernameLogin( next ) {
   const testUser = {
       "username": "babbadleroybrown",
       "password": "85Ie!ki49p",
+      "ips": fauxIPS,
   };
   accountModel.Read.validateAccount( testUser, ( result ) => {
     badUsernameLoginResult = result;
@@ -583,6 +584,7 @@ function attemptbadPasswordLogin( next ) {
   const testUser = {
       "username": username,
       "password": "2M@55iP931p",
+      "ips": fauxIPS,
   };
   accountModel.Read.validateAccount( testUser, ( result ) => {
     badPasswordLoginResult = result;
@@ -594,6 +596,7 @@ function attemptGoodLogin( next ) {
   const testUser = {
       "username": username,
       "password": password,
+      "ips": fauxIPS,
   };
   accountModel.Read.validateAccount( testUser, ( result ) => {
     goodLogingResult = result;

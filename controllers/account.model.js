@@ -2,6 +2,7 @@
 const bcrypt = require('bcryptjs');
 const couchbase = require('couchbase');
 const db = require('./db');
+const jwt = require('jsonwebtoken');
 const N1qlQuery = couchbase.N1qlQuery;
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
@@ -119,7 +120,7 @@ const accountModel = {
         },
         validateAccount: ( account, next ) => {
           const validationerrmsg = 'Account validation failed.';
-          const q = N1qlQuery.fromString('SELECT _id, `password` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND `username` == "' + account.username + '"');
+          const q = N1qlQuery.fromString('SELECT ' + fields + ', `password` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND `username` == "' + account.username + '"');
           db.query(q, function(e, r) {
             if(e){
               console.log('error in accountModel.Read.validateAccount');
@@ -129,21 +130,24 @@ const accountModel = {
               if ( r.length === 1 ) {
                     accountMethod.passwordCompare( account.password, r[0].password, ( result ) => {
                       if( result ){
-                        accountModel.Update.token( account, ( token ) => {
-                          next({ "result": result });
+                        accountModel.Update.token( r[0]._id, account, ( tokens ) => {
+                          next({ "result": result, "token": tokens.token });
                         });
                       } else {
-                        next({ "msg": validationerrmsg, "result": false, "token": false });
+                        next({ "msg": validationerrmsg, "result": false });
                       }
                     });
               } else if( r.length === 0 ) {
-                next({ "msg": validationerrmsg, "result": false, "token": false });
+                next({ "msg": validationerrmsg, "result": false });
               } else {
                 console.log('unexpected length of ' + r.length);
                 next({ "msg": "data length unexpected.", "result": false });
               }
             }
-        });
+          });
+        },
+        verifyToken: () => {
+          //jwt.verify(token, secretOrPublicKey, [options, callback]);
         }
     },
     Update: {
@@ -156,23 +160,21 @@ const accountModel = {
         role: ( uid, role, next ) => {
 
         },
-        token: ( account, next ) => {
-            // const token = jwt.sign({ _id: account.user._id.toString() }, process.env.JWT_SECRET, '7 days' );
-            //
-            // // add token to account with their current ip.
-            // // add a forwarded IP to check if user has a proxy.
-            // account.tokens = account.tokens.concat({
-            //     token: token,
-            //     ips: {
-            //         ip:ips.ip,
-            //         fwdIP: ips.fwdIP
-            //     }
-            // });
-            //
-            // collection.Update({_id: account._id},account);
-            //
-            //next( token );
-            next( false );
+        token: ( uid, account, next ) => {
+          const token = jwt.sign({ _id: uid }, process.env.JWT_SECRET, { expiresIn: '7 days' } );
+
+          // add token to account with their current ip.
+          // add a forwarded IP to check if user has a proxy.
+          let tokens = {
+            token: token,
+              ips: {
+                ip: account.ips.ip,
+                fwdIP: account.ips.fwdIP
+              }
+          };
+
+          // collection.Update({_id: account._id},account);
+          next( tokens );
         },
         twoStep: () => {
 
