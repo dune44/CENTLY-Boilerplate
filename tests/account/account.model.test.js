@@ -303,7 +303,6 @@ describe( 'Account Model Create a user account', () => {
 
 });
 
-
 describe( 'Account Model Create a duplicate username in account', () => {
 
   let newBadDuplicateNameAccount;
@@ -457,6 +456,9 @@ describe( 'Account Model Read accountByUsername', () => {
     describe( 'Read Account with Bad Username', () => {
 
     let readBadUsernameAccountResult;
+    const badUsername_ReadBadUsernameAccount = 'WillowOfWindsleyDate';
+    const msgReadBadUsernameAccountResult = 'Result not found for ' + badUsername_ReadBadUsernameAccount;
+    const badMsg_ReadBadUsernameAccount = 'There is a duplicate found for ' + username;
 
     function readBadUsernameAccount( next ) {
       next();
@@ -470,25 +472,47 @@ describe( 'Account Model Read accountByUsername', () => {
       done();
     });
 
-    // Property Exists
+    // Property Exists -- ( readBadUsernameAccountResult )
     it( 'readBadUsernameAccountResult should NOT contain property data', () => {
       expect( readBadUsernameAccountResult ).to.not.have.property( 'data' );
+    });
+
+    it( 'readBadUsernameAccountResult should NOT contain property error', () => {
+      expect( readBadUsernameAccountResult ).to.not.have.property( 'error' );
     });
 
     it( 'readBadUsernameAccountResult should contain property msg', () => {
       expect(readBadUsernameAccountResult).to.have.property('msg');
     });
 
-    it( 'readBadUsernameAccountResult should NOT contain property result', () => {
-      expect(readBadUsernameAccountResult).to.not.have.property('result');
+    it( 'readBadUsernameAccountResult should contain property result', () => {
+      expect(readBadUsernameAccountResult).to.have.property('result');
     });
 
     // Property Type
-    
+    it( 'readBadUsernameAccountResult msg should be a string', () => {
+        expect( readBadUsernameAccountResult.msg ).to.be.a( 'string' );
+    });
+
+    it( 'readBadUsernameAccountResult result should be a boolean', () => {
+        expect( readBadUsernameAccountResult.result ).to.be.a( 'boolean' );
+    });
 
     // Return Value
 
+    it( 'readBadUsernameAccountResult msg should NOT have result of badMsg_ReadBadUsernameAccount: ' + badMsg_ReadBadUsernameAccount, () => {
+        expect( readBadUsernameAccountResult.msg ).to.not.equal( badMsg_ReadBadUsernameAccount );
     });
+
+    it( 'readBadUsernameAccountResult msg should have result of msgReadBadUsernameAccountResult: ' + msgReadBadUsernameAccountResult, () => {
+        expect( readBadUsernameAccountResult.msg ).to.equal( msgReadBadUsernameAccountResult );
+    });
+
+    it( 'readBadUsernameAccountResult result should have result of false', () => {
+        expect( readBadUsernameAccountResult.result ).to.equal( false );
+    });
+
+  });
 
 });
 
