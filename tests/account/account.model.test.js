@@ -625,7 +625,10 @@ describe( 'Account Model Read accountById', () => {
     const badUIDMsg = 'no user found.';
 
     function badUID_readAccountbyID( next ) {
-      next();
+      accountModel.Read.accountById( badUID, ( result ) => {
+        readBadUIDAccountResult = result;
+        next();
+      });
     }
 
     before( ( done ) => {
