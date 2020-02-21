@@ -565,9 +565,11 @@ describe( 'Account Model Read All', () => {
 
 });
 
-let badUsernameLoginResult, badPasswordLoginResult, goodLogingResult;
+let badUsernameLoginResult, badPasswordLoginResult, goodLogingResult, validationToken;
 const validationerrmsg = 'Account validation failed.';
 const fauxIPS = { "ip": "10.0.0.0", "fwdIP": "5.0.0.0" };
+
+
 function attemptbadUsernameLogin( next ) {
   const testUser = {
       "username": "babbadleroybrown",
@@ -599,12 +601,13 @@ function attemptGoodLogin( next ) {
       "ips": fauxIPS,
   };
   accountModel.Read.validateAccount( testUser, ( result ) => {
+    validationToken = result.token;
     goodLogingResult = result;
     next();
   });
 }
 
-describe('Account Model Read Validate Credentials', () => {
+describe( 'Account Model Read Validate Credentials', () => {
 
   before( ( done ) => {
     attemptbadUsernameLogin( () => {
@@ -730,6 +733,65 @@ describe('Account Model Read Validate Credentials', () => {
 
 });
 
+let decodedToken;
+
+function getTokenDecode( next ) {
+  accountModel.Read.verifyToken( validationToken, ( token ) => {
+    decodedToken = token;
+    //console.log( token );
+    next();
+  });
+}
+
+
+describe( 'Account Model Read Token Operations', () => {
+
+  describe( ' Validating a good token. ', () => {
+
+    before( ( done ) => {
+      getTokenDecode( done );
+    });
+
+    after( ( done ) => {
+      done();
+    });
+
+    // Property Existence -- ( decodedToken )
+    it( 'decodedToken should NOT have property error', () => {
+        expect( decodedToken ).to.not.have.property( 'error' );
+    });
+
+    it( 'decodedToken should NOT have property msg', () => {
+        expect( decodedToken ).to.not.have.property( 'msg' );
+    });
+
+    it( 'decodedToken should have property result', () => {
+        expect( decodedToken ).to.have.property( 'result' );
+    });
+
+    it( 'decodedToken should have property expiresIn', () => {
+        expect( decodedToken ).to.have.property( 'expiresIn' );
+    });
+
+
+    // Property Type -- ( decodedToken )
+    it( 'decodedToken should be an Object', () => {
+      expect( decodedToken ).to.be.a( 'Object' );
+    });
+
+    it( 'decodedToken expiresIn should be an String', () => {
+      expect( decodedToken.expiresIn ).to.be.a( 'string' );
+    });
+
+    // Return Value -- ( decodedToken )
+    it( 'decodedToken result should have of true', () => {
+        expect( decodedToken.result ).to.equal( true );
+    });
+
+  });
+
+
+});
 
 describe('Update', () => {
 

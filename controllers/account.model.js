@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const couchbase = require('couchbase');
 const db = require('./db');
 const jwt = require('jsonwebtoken');
+const moment = require('moment');
 const N1qlQuery = couchbase.N1qlQuery;
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
@@ -146,8 +147,21 @@ const accountModel = {
             }
           });
         },
-        verifyToken: () => {
-          //jwt.verify(token, secretOrPublicKey, [options, callback]);
+        verifyToken: ( token, next) => {
+          jwt.verify(token, process.env.JWT_SECRET, ( e, decoded ) => {
+            if( e ) {
+              console.log('error in accountModel.Read.verifyToken');
+              console.log(e);
+              next({ "error": e, "msg": 'An error occured', "result": false });
+            } else if(moment().unix() > decoded.exp ){
+              // time expired.
+              next({ result: false });
+            } else {
+              // there is time left
+              const timeLeft = moment.unix( decoded.exp ).fromNow();
+              next({ "result": true, "expiresIn": timeLeft });
+            }
+          });
         }
     },
     Update: {
