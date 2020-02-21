@@ -461,7 +461,10 @@ describe( 'Account Model Read accountByUsername', () => {
     const badMsg_ReadBadUsernameAccount = 'There is a duplicate found for ' + username;
 
     function readBadUsernameAccount( next ) {
-      next();
+      accountModel.Read.accountByUsername( badUsername_ReadBadUsernameAccount, ( result ) => {
+        readBadUsernameAccountResult = result;
+        next();
+      });
     }
 
     before( ( done ) => {
