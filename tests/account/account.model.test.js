@@ -789,20 +789,20 @@ describe( 'Account Model Read Validate Credentials', () => {
     });
 
     // Property Type -- ( badUsernameLoginResult )
-    it( 'badUsernameLoginResult result should be an Boolean', () => {
+    it( 'badUsernameLoginResult result should be a boolean', () => {
       expect( badUsernameLoginResult.result ).to.be.a( 'boolean' );
     });
 
-    it( 'badUsernameLoginResult msg should be an String', () => {
+    it( 'badUsernameLoginResult msg should be a string', () => {
       expect( badUsernameLoginResult.msg ).to.be.a( 'string' );
     });
 
     // Return Value -- ( badUsernameLoginResult )
-    it( 'badUsernameLoginResult result should have result of false', () => {
+    it( 'badUsernameLoginResult result should have value of false', () => {
       expect( badUsernameLoginResult.result ).to.equal( false );
     });
 
-    it( 'badUsernameLoginResult msg should have result of validationerrmsg: ' + validationerrmsg, () => {
+    it( 'badUsernameLoginResult msg should have value of var validationerrmsg: ' + validationerrmsg, () => {
       expect( badUsernameLoginResult.msg ).to.equal( validationerrmsg );
     });
 
@@ -827,20 +827,20 @@ describe( 'Account Model Read Validate Credentials', () => {
     });
 
     // Property Type -- ( badPasswordLoginResult )
-    it( 'badPasswordLoginResult result should be an Boolean', () => {
+    it( 'badPasswordLoginResult result should be a boolean', () => {
       expect( badPasswordLoginResult.result ).to.be.a( 'boolean' );
     });
 
-    it( 'badPasswordLoginResult msg should be an String', () => {
+    it( 'badPasswordLoginResult msg should be a string', () => {
       expect( badPasswordLoginResult.msg ).to.be.a( 'string' );
     });
 
     // Return Value -- ( badPasswordLoginResult )
-    it( 'badPasswordLoginResult should have result of false', () => {
+    it( 'badPasswordLoginResult result should have value of false', () => {
       expect( badPasswordLoginResult.result ).to.equal( false );
     });
 
-    it( 'badPasswordLoginResult msg should have result of validationerrmsg: ' + validationerrmsg, () => {
+    it( 'badPasswordLoginResult msg should have value of var validationerrmsg: ' + validationerrmsg, () => {
       expect( badPasswordLoginResult.msg ).to.equal( validationerrmsg );
     });
 
@@ -865,16 +865,16 @@ describe( 'Account Model Read Validate Credentials', () => {
     });
 
     // Property Type -- ( goodLogingResult )
-    it( 'goodLogingResult result should be an Boolean', () => {
+    it( 'goodLogingResult result should be a boolean', () => {
       expect( goodLogingResult.result ).to.be.a( 'boolean' );
     });
 
-    it( 'goodLogingResult token should be an String', () => {
+    it( 'goodLogingResult token should be a string', () => {
       expect( goodLogingResult.token ).to.be.a( 'string' );
     });
 
     // Return Value -- ( goodLogingResult )
-    it( 'goodLogingResult should have result of true', () => {
+    it( 'goodLogingResult result should have value of true', () => {
       expect( goodLogingResult.result ).to.equal( true );
     });
 
@@ -928,21 +928,102 @@ describe( 'Account Model Read Token Operations', () => {
       expect( decodedToken ).to.be.a( 'Object' );
     });
 
-    it( 'decodedToken expiresIn should be an String', () => {
+    it( 'decodedToken expiresIn should be a String', () => {
       expect( decodedToken.expiresIn ).to.be.a( 'string' );
     });
 
     // Return Value -- ( decodedToken )
-    it( 'decodedToken expiresIn should have of true', () => {
+    it( 'decodedToken result should have value of true', () => {
         expect( decodedToken.result ).to.equal( true );
     });
 
-    it( 'decodedToken result should have of var expiresInDefault: '+ expiresInDefault, () => {
+    it( 'decodedToken expiresIn should have value equal to var expiresInDefault: '+ expiresInDefault, () => {
         expect( decodedToken.expiresIn ).to.equal( expiresInDefault );
     });
 
   });
 
+
+});
+
+describe( 'Account Model Read rolesById', () => {
+
+  describe( 'Read Roles with Good UID', () => {
+    let readRolesResult;
+
+    // Property Exists
+    it( 'readRolesResult should NOT have property error', () => {
+        expect( readRolesResult ).to.not.have.property( 'error' );
+    });
+
+    it( 'readRolesResult should NOT have property msg', () => {
+        expect( readRolesResult ).to.not.have.property( 'msg' );
+    });
+
+    it( 'readRolesResult should have property result', () => {
+        expect( readRolesResult ).to.have.property( 'result' );
+    });
+
+    it( 'readRolesResult should have property data', () => {
+        expect( readRolesResult ).to.have.property( 'data' );
+    });
+
+    // Property Type
+    it( 'readRolesResult should be an Object', () => {
+      expect( readRolesResult ).to.be.a( 'Object' );
+    });
+
+    it( 'readRolesResult result should be a boolean', () => {
+      expect( readRolesResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'readRolesResult result should have of true', () => {
+        expect( readRolesResult.result ).to.equal( true );
+    });
+
+  });
+
+  describe( 'Read Roles with Bad UID', () => {
+    let readRolesBadResult;
+
+    // Property Exists
+
+    it( 'readRolesBadResult should NOT have property data', () => {
+      expect( readRolesBadResult ).to.not.have.property( 'data' );
+    });
+
+    it( 'readRolesBadResult should NOT have property error', () => {
+        expect( readRolesBadResult ).to.not.have.property( 'error' );
+    });
+
+    it( 'readRolesBadResult should have property msg', () => {
+        expect( readRolesBadResult ).to.have.property( 'msg' );
+    });
+
+    it( 'readRolesBadResult should have property result', () => {
+        expect( readRolesBadResult ).to.have.property( 'result' );
+    });
+
+    // Property Type
+    it( 'readRolesBadResult should be an Object', () => {
+      expect( readRolesBadResult ).to.be.a( 'Object' );
+    });
+
+    it( 'readRolesBadResult msg should be a string', () => {
+      expect( readRolesBadResult.msg ).to.be.a( 'string' );
+    });
+
+    it( 'readRolesBadResult result should be a boolean', () => {
+      expect( readRolesBadResult.msg ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'readRolesBadResult result should have value of false', () => {
+        expect( readRolesBadResult.result ).to.equal( false );
+    });
+
+  });
 
 });
 
