@@ -375,9 +375,7 @@ describe( 'Account Model Create a second user', () => {
   }
 
   before( ( done ) => {
-
-    done();
-
+    initializeSecondAccount( done );
   });
 
   after( ( done ) => {
