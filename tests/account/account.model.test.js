@@ -25,12 +25,15 @@ describe( '', () => {
 */
 
 let newAccount,
+    newAccount2,
     newBadPasswordAccount,
     newBadUsernameAccount,
     newBadEmailAccount;
 
 const username = 'testuser';
 const password = '1A2b6O!b';
+const username2 = 'testuser2';
+const password2 = 'A!3k90P2';
 const badUID = uuidv4();
 
 describe( 'Account Model Create a user account', () => {
@@ -155,75 +158,75 @@ describe( 'Account Model Create a user account', () => {
       });
   }
 
-    before( ( done ) => {
-        //console.log( 'Start before statement' );
-        clearAccounts( () => {
-            indexAvailable( ( result ) => {
-                if ( !result ) {
-                    //console.log( 'build indexes' );
-                    buildPrimaryIndex( () => {
-                        buildIndexes( () => {
-                            runDbCalls( done );
-                        });
-                    });
-                } else {
-                    //console.log( 'Indexes built, proceed.' );
-                    runDbCalls( done );
-                }
+  before( ( done ) => {
+    //console.log( 'Start before statement' );
+    clearAccounts( () => {
+      indexAvailable( ( result ) => {
+        if ( !result ) {
+          //console.log( 'build indexes' );
+          buildPrimaryIndex( () => {
+            buildIndexes( () => {
+              runDbCalls( done );
             });
-        });
+          });
+        } else {
+          //console.log( 'Indexes built, proceed.' );
+          runDbCalls( done );
+        }
+      });
+    });
+  });
+
+  after( ( done ) => {
+    setTimeout( done, 10);
+  });
+
+  describe( 'Proper Account Creation', () => {
+
+    // Property Existence
+    it( 'newAccount data should have property email', () => {
+      expect( newAccount.data ).to.have.property( 'email' );
     });
 
-    after( ( done ) => {
-        setTimeout( done, 10);
+    it( 'newAccount should have property password', () => {
+      expect( newAccount.data ).to.have.property( 'password' );
     });
 
-    describe( 'Proper Account Creation', () => {
-
-      // Property Existence
-      it( 'newAccount data should have property email', () => {
-          expect( newAccount.data ).to.have.property( 'email' );
-      });
-
-      it( 'newAccount should have property password', () => {
-          expect( newAccount.data ).to.have.property( 'password' );
-      });
-
-      it( 'newAccount should have property result', () => {
-         expect( newAccount ).to.have.property( 'result' );
-      });
-
-      it( 'newAccount should have property username', () => {
-          expect( newAccount.data ).to.have.property( 'username' );
-      });
-
-      // Property Type
-      it( 'newAccount email should be a string', () => {
-        expect( newAccount.data.email ).to.be.a( 'string' );
-      });
-
-      it( 'newAccount password should be a string', () => {
-        expect( newAccount.data.password ).to.be.a( 'string' );
-      });
-
-      it( 'newAccount username should be a string', () => {
-        expect(newAccount.data.username).to.be.a( 'string' );
-      });
-
-      // Return Value
-      it( 'newAccount should not return false', () => {
-        expect( newAccount ).to.not.equal( false );
-      });
-
-      it( 'newAccount should have a password longer than 30', () => {
-        expect( newAccount.data.password ).to.have.lengthOf.at.least( 30 );
-      });
-
-      it( 'newAccount should have a username longer than 3', () => {
-        expect( newAccount.data.username ).to.have.lengthOf.at.least( 3 );
-      });
-
+    it( 'newAccount should have property result', () => {
+      expect( newAccount ).to.have.property( 'result' );
     });
+
+    it( 'newAccount should have property username', () => {
+      expect( newAccount.data ).to.have.property( 'username' );
+    });
+
+    // Property Type
+    it( 'newAccount data should be an Object', () => {
+      expect( newAccount.data ).to.be.a( 'Object' );
+    });
+    
+    it( 'newAccount data email should be a string', () => {
+      expect( newAccount.data.email ).to.be.a( 'string' );
+    });
+
+    it( 'newAccount data password should be a string', () => {
+      expect( newAccount.data.password ).to.be.a( 'string' );
+    });
+
+    it( 'newAccount username should be a string', () => {
+      expect(newAccount.data.username).to.be.a( 'string' );
+    });
+
+    // Return Value
+    it( 'newAccount should have a password longer than 30', () => {
+      expect( newAccount.data.password ).to.have.lengthOf.at.least( 30 );
+    });
+
+    it( 'newAccount should have a username longer than 3', () => {
+      expect( newAccount.data.username ).to.have.lengthOf.at.least( 3 );
+    });
+
+  });
 
     describe( 'Account Created with Bad Password', () => {
 
@@ -353,6 +356,75 @@ describe( 'Account Model Create a duplicate username in account', () => {
   // Return Value
   it( 'newBadDuplicateNameAccount should have result of false', () => {
     expect( newBadDuplicateNameAccount.result ).to.equal( false );
+  });
+
+});
+
+describe( 'Account Model Create a second user', () => {
+
+  function initializeSecondAccount( next ) {
+    const testUser = {
+        "username": username2,
+        "password": password2,
+        "email": "steve@somesite.com",
+    };
+    accountModel.Create.account( testUser, ( goodResult ) => {
+      newAccount2 = goodResult;
+      next();
+    });
+  }
+
+  before( ( done ) => {
+
+    done();
+
+  });
+
+  after( ( done ) => {
+    done();
+  });
+
+  // Property Existence
+  it( 'newAccount2 data should have property email', () => {
+    expect( newAccount2.data ).to.have.property( 'email' );
+  });
+
+  it( 'newAccount2 should have property password', () => {
+    expect( newAccount2.data ).to.have.property( 'password' );
+  });
+
+  it( 'newAccount2 should have property result', () => {
+   expect( newAccount2 ).to.have.property( 'result' );
+  });
+
+  it( 'newAccount2 should have property username', () => {
+    expect( newAccount2.data ).to.have.property( 'username' );
+  });
+
+  // Property Type
+  it( 'newAccount2 data should be an Object', () => {
+    expect( newAccount2.data ).to.be.a( 'Object' );
+  });
+
+  it( 'newAccount2 data email should be a string', () => {
+    expect( newAccount2.data.email ).to.be.a( 'string' );
+  });
+
+  it( 'newAccount2 data password should be a string', () => {
+    expect( newAccount2.data.password ).to.be.a( 'string' );
+  });
+
+  it( 'newAccount2 username should be a string', () => {
+    expect(newAccount2.data.username).to.be.a( 'string' );
+  });
+
+  // Return Value
+  it( 'newAccount2 should have a password longer than 30', () => {
+    expect( newAccount2.data.password ).to.have.lengthOf.at.least( 30 );
+  });
+
+  it( 'newAccount2 should have a username longer than 3', () => {
+    expect( newAccount2.data.username ).to.have.lengthOf.at.least( 3 );
   });
 
 });
@@ -949,17 +1021,19 @@ describe( 'Account Model Read Token Operations', () => {
 
 });
 
+
+
 describe( 'Account Model Read rolesById', () => {
 
-  describe( 'Read Roles with Good UID', () => {
-    let readRolesResult;
+  describe( 'Read populated Roles with Good UID', () => {
+    let read_pop_RolesResult;
 
-    function readRolesByID( next ) {
+    function read_pop_RolesByID( next ) {
       next();
     }
 
     before( ( done ) => {
-      readRolesByID( done );
+      read_pop_RolesByID( done );
     });
 
     after( ( done ) => {
@@ -967,44 +1041,96 @@ describe( 'Account Model Read rolesById', () => {
     });
 
     // Property Exists
-    it( 'readRolesResult should NOT have property error', () => {
-        expect( readRolesResult ).to.not.have.property( 'error' );
+    it( 'read_pop_RolesResult should NOT have property error', () => {
+        expect( read_pop_RolesResult ).to.not.have.property( 'error' );
     });
 
-    it( 'readRolesResult should NOT have property msg', () => {
-        expect( readRolesResult ).to.not.have.property( 'msg' );
+    it( 'read_pop_RolesResult should NOT have property msg', () => {
+        expect( read_pop_RolesResult ).to.not.have.property( 'msg' );
     });
 
-    it( 'readRolesResult should have property result', () => {
-        expect( readRolesResult ).to.have.property( 'result' );
+    it( 'read_pop_RolesResult should have property result', () => {
+        expect( read_pop_RolesResult ).to.have.property( 'result' );
     });
 
-    it( 'readRolesResult should have property data', () => {
-        expect( readRolesResult ).to.have.property( 'data' );
+    it( 'read_pop_RolesResult should have property data', () => {
+        expect( read_pop_RolesResult ).to.have.property( 'data' );
     });
 
     // Property Type
-    it( 'readRolesResult should be an Object', () => {
-      expect( readRolesResult ).to.be.a( 'Object' );
+    it( 'read_pop_RolesResult should be an Object', () => {
+      expect( read_pop_RolesResult ).to.be.a( 'Object' );
     });
 
-    it( 'readRolesResult data should be a array', () => {
-        expect( readRolesResult ).to.be.a( 'array' );
+    it( 'read_pop_RolesResult data should be a array', () => {
+        expect( read_pop_RolesResult ).to.be.a( 'array' );
     });
 
-    it( 'readRolesResult result should be a boolean', () => {
-      expect( readRolesResult.result ).to.be.a( 'boolean' );
+    it( 'read_pop_RolesResult result should be a boolean', () => {
+      expect( read_pop_RolesResult.result ).to.be.a( 'boolean' );
     });
 
     // Return Value
-    it( 'readRolesResult result should have of true', () => {
-        expect( readRolesResult.result ).to.equal( true );
+    it( 'read_pop_RolesResult result should have of true', () => {
+        expect( read_pop_RolesResult.result ).to.equal( true );
+    });
+
+  });
+
+  describe( 'Read empty Roles with Good UID', () => {
+    let read_empty_RolesResult;
+
+    function read_empty_RolesByID( next ) {
+      next();
+    }
+
+    before( ( done ) => {
+      read_empty_RolesByID( done );
+    });
+
+    after( ( done ) => {
+      done();
+    });
+
+    // Property Exists
+    it( 'read_empty_RolesResult should NOT have property error', () => {
+        expect( read_empty_RolesResult ).to.not.have.property( 'error' );
+    });
+
+    it( 'read_empty_RolesResult should NOT have property msg', () => {
+        expect( read_empty_RolesResult ).to.not.have.property( 'msg' );
+    });
+
+    it( 'read_empty_RolesResult should have property result', () => {
+        expect( read_empty_RolesResult ).to.have.property( 'result' );
+    });
+
+    it( 'read_empty_RolesResult should have property data', () => {
+        expect( read_empty_RolesResult ).to.have.property( 'data' );
+    });
+
+    // Property Type
+    it( 'read_empty_RolesResult should be an Object', () => {
+      expect( read_empty_RolesResult ).to.be.a( 'Object' );
+    });
+
+    it( 'read_empty_RolesResult data should be a array', () => {
+        expect( read_empty_RolesResult ).to.be.a( 'array' );
+    });
+
+    it( 'read_empty_RolesResult result should be a boolean', () => {
+      expect( read_empty_RolesResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'read_empty_RolesResult result should have of true', () => {
+        expect( read_empty_RolesResult.result ).to.equal( true );
     });
 
   });
 
   describe( 'Read Roles with Bad UID', () => {
-    let readRolesBadResult;
+    let read_bad_RolesResult;
 
     function readRolesByID( next ) {
       next();
@@ -1019,38 +1145,38 @@ describe( 'Account Model Read rolesById', () => {
     });
 
     // Property Exists
-    it( 'readRolesBadResult should NOT have property data', () => {
-      expect( readRolesBadResult ).to.not.have.property( 'data' );
+    it( 'read_bad_RolesResult should NOT have property data', () => {
+      expect( read_bad_RolesResult ).to.not.have.property( 'data' );
     });
 
-    it( 'readRolesBadResult should NOT have property error', () => {
-        expect( readRolesBadResult ).to.not.have.property( 'error' );
+    it( 'read_bad_RolesResult should NOT have property error', () => {
+        expect( read_bad_RolesResult ).to.not.have.property( 'error' );
     });
 
-    it( 'readRolesBadResult should have property msg', () => {
-        expect( readRolesBadResult ).to.have.property( 'msg' );
+    it( 'read_bad_RolesResult should have property msg', () => {
+        expect( read_bad_RolesResult ).to.have.property( 'msg' );
     });
 
-    it( 'readRolesBadResult should have property result', () => {
-        expect( readRolesBadResult ).to.have.property( 'result' );
+    it( 'read_bad_RolesResult should have property result', () => {
+        expect( read_bad_RolesResult ).to.have.property( 'result' );
     });
 
     // Property Type
-    it( 'readRolesBadResult should be an Object', () => {
-      expect( readRolesBadResult ).to.be.a( 'Object' );
+    it( 'read_bad_RolesResult should be an Object', () => {
+      expect( read_bad_RolesResult ).to.be.a( 'Object' );
     });
 
-    it( 'readRolesBadResult msg should be a string', () => {
-      expect( readRolesBadResult.msg ).to.be.a( 'string' );
+    it( 'read_bad_RolesResult msg should be a string', () => {
+      expect( read_bad_RolesResult.msg ).to.be.a( 'string' );
     });
 
-    it( 'readRolesBadResult result should be a boolean', () => {
-      expect( readRolesBadResult.msg ).to.be.a( 'boolean' );
+    it( 'read_bad_RolesResult result should be a boolean', () => {
+      expect( read_bad_RolesResult.msg ).to.be.a( 'boolean' );
     });
 
     // Return Value
-    it( 'readRolesBadResult result should have value of false', () => {
-        expect( readRolesBadResult.result ).to.equal( false );
+    it( 'read_bad_RolesResult result should have value of false', () => {
+        expect( read_bad_RolesResult.result ).to.equal( false );
     });
 
   });
