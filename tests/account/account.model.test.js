@@ -1,10 +1,13 @@
 const accountModel = require('../../controllers/account.model');
 const couchbase = require('couchbase');
+const dirtyChai = require('dirty-chai');
 const N1qlQuery = couchbase.N1qlQuery;
 const db = require('./../../controllers/db');
 const chai = require('chai');
 const expect = chai.expect;
 const uuidv4 = require('uuid/v4');
+
+chai.use(dirtyChai);
 
 /*
 Test Template
@@ -28,6 +31,7 @@ let newAccount,
 
 const username = 'testuser';
 const password = '1A2b6O!b';
+const badUID = uuidv4();
 
 describe( 'Account Model Create a user account', () => {
 
@@ -621,7 +625,6 @@ describe( 'Account Model Read accountById', () => {
   describe( 'Read Account with Bad UID', () => {
 
     let readBadUIDAccountResult;
-    const badUID = uuidv4();
     const badUIDMsg = 'no user found.';
 
     function badUID_readAccountbyID( next ) {
@@ -951,6 +954,18 @@ describe( 'Account Model Read rolesById', () => {
   describe( 'Read Roles with Good UID', () => {
     let readRolesResult;
 
+    function readRolesByID( next ) {
+      next();
+    }
+
+    before( ( done ) => {
+      readRolesByID( done );
+    });
+
+    after( ( done ) => {
+      done();
+    });
+
     // Property Exists
     it( 'readRolesResult should NOT have property error', () => {
         expect( readRolesResult ).to.not.have.property( 'error' );
@@ -973,6 +988,10 @@ describe( 'Account Model Read rolesById', () => {
       expect( readRolesResult ).to.be.a( 'Object' );
     });
 
+    it( 'readRolesResult data should be a array', () => {
+        expect( readRolesResult ).to.be.a( 'array' );
+    });
+
     it( 'readRolesResult result should be a boolean', () => {
       expect( readRolesResult.result ).to.be.a( 'boolean' );
     });
@@ -987,8 +1006,19 @@ describe( 'Account Model Read rolesById', () => {
   describe( 'Read Roles with Bad UID', () => {
     let readRolesBadResult;
 
-    // Property Exists
+    function readRolesByID( next ) {
+      next();
+    }
 
+    before( ( done ) => {
+      readRolesByID( done );
+    });
+
+    after( ( done ) => {
+      done();
+    });
+
+    // Property Exists
     it( 'readRolesBadResult should NOT have property data', () => {
       expect( readRolesBadResult ).to.not.have.property( 'data' );
     });
@@ -1027,10 +1057,198 @@ describe( 'Account Model Read rolesById', () => {
 
 });
 
-describe('Update', () => {
+describe( 'Account Model Read isInRole', () => {
+
+  describe( 'Read empty isInRole with Good UID', () => {
+
+    let empty_isInRoleResult;
+
+    function get_empty_IsInRole( next ) {
+
+      next();
+
+    }
+
+    before( ( done ) => {
+      get_empty_IsInRole( done );
+    });
+
+    after( ( done ) => {
+      done();
+    });
+
+    // Property Exists
+    it( 'isInRoleResult should NOT have property error', () => {
+      expect( isInRoleResult ).to.not.have.property( 'error' );
+    });
+
+    it( 'isInRoleResult should NOT have property msg', () => {
+      expect( isInRoleResult ).to.not.have.property( 'msg' );
+    });
+
+    it( 'isInRoleResult should have property result', () => {
+      expect( isInRoleResult ).to.have.property( 'result' );
+    });
+
+    it( 'isInRoleResult should have property data', () => {
+      expect( isInRoleResult ).to.have.property( 'data' );
+    });
+
+    // Property Type
+    it( 'isInRoleResult should be an Object', () => {
+      expect( isInRoleResult ).to.be.a( 'Object' );
+    });
+
+    it( 'isInRoleResult data should be a array', () => {
+      expect( isInRoleResult ).to.be.a( 'array' );
+    });
+
+    it( 'isInRoleResult result should be a boolean', () => {
+      expect( isInRoleResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'isInRoleResult data should have be an empty array', () => {
+      expect( isInRoleResult.data ).to.be.empty();
+    });
+
+    it( 'isInRoleResult result should have value of true', () => {
+      expect( isInRoleResult.result ).to.equal( true );
+    });
+
+  });
+
+  describe( 'Read populated isInRole with Good UID', () => {
+    let populated_isInRoleResult;
+
+    function get_populated_IsInRole( next ) {
+
+      next();
+
+    }
+
+    before( ( done ) => {
+      getIsInRole( done );
+    });
+
+    after( ( done ) => {
+      done();
+    });
+
+    // Property Exists
+    it( 'populated_isInRoleResult should NOT have property error', () => {
+      expect( populated_isInRoleResult ).to.not.have.property( 'error' );
+    });
+
+    it( 'populated_isInRoleResult should NOT have property msg', () => {
+      expect( populated_isInRoleResult ).to.not.have.property( 'msg' );
+    });
+
+    it( 'populated_isInRoleResult should have property result', () => {
+      expect( populated_isInRoleResult ).to.have.property( 'result' );
+    });
+
+    it( 'populated_isInRoleResult should have property data', () => {
+      expect( populated_isInRoleResult ).to.have.property( 'data' );
+    });
+
+    // Property Type
+    it( 'populated_isInRoleResult should be an Object', () => {
+      expect( populated_isInRoleResult ).to.be.a( 'Object' );
+    });
+
+    it( 'populated_isInRoleResult data should be a array', () => {
+      expect( populated_isInRoleResult.data ).to.be.a( 'array' );
+    });
+
+    it( 'populated_isInRoleResult result should be a boolean', () => {
+      expect( populated_isInRoleResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'populated_isInRoleResult result should have value of true', () => {
+      expect( populated_isInRoleResult.result ).to.equal( true );
+    });
+
+  });
+
+  describe( 'Read isInRole with Bad UID', () => {
+
+    let bad_isInRoleResult;
+
+    function get_bad_IsInRole( next ) {
+
+      next();
+
+    }
+
+    before( ( done ) => {
+      getIsInRole( done );
+    });
+
+    after( ( done ) => {
+      done();
+    });
+
+    // Property Exists
+    it( 'populated_isInRoleResult should NOT have property data', () => {
+      expect( populated_isInRoleResult ).to.not.have.property( 'data' );
+    });
+
+    it( 'populated_isInRoleResult should NOT have property error', () => {
+      expect( populated_isInRoleResult ).to.not.have.property( 'error' );
+    });
+
+    it( 'populated_isInRoleResult should have property msg', () => {
+      expect( populated_isInRoleResult ).to.have.property( 'msg' );
+    });
+
+    it( 'populated_isInRoleResult should have property result', () => {
+      expect( populated_isInRoleResult ).to.have.property( 'result' );
+    });
+
+    // Property Type
+    it( 'populated_isInRoleResult should be an Object', () => {
+      expect( populated_isInRoleResult ).to.be.a( 'Object' );
+    });
+
+    it( 'populated_isInRoleResult msg should be a string', () => {
+      expect( populated_isInRoleResult.msg ).to.be.a( 'string' );
+    });
+
+    it( 'populated_isInRoleResult result should be a string', () => {
+      expect( populated_isInRoleResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'populated_isInRoleResult result should have value of false', () => {
+        expect( populated_isInRoleResult.result ).to.equal( false );
+    });
+
+  });
 
 });
 
-describe('Delete', () => {
+describe('Update account', () => {
+
+});
+
+describe('Update password', () => {
+
+});
+
+describe('Update role', () => {
+
+});
+
+describe('Update token', () => {
+
+});
+
+describe('Update twoStep', () => {
+
+});
+
+describe('Delete account', () => {
 
 });

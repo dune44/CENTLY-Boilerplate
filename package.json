@@ -42,12 +42,13 @@
     "osom": "3.0.3",
     "qrcode": "1.4.4",
     "speakeasy": "2.0.0",
-    "uuid": "3.4.0",
+    "uuid": "7.0.0",
     "validator": "12.2.0",
     "wrap-sync": "1.0.0"
   },
   "devDependencies": {
     "chai": "4.2.0",
+    "dirty-chai": "^2.0.1",
     "env-cmd": "10.1.0",
     "istanbul": "^0.4.5",
     "mocha": "7.0.1",
