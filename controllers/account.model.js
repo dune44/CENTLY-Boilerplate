@@ -7,7 +7,8 @@ const moment = require('moment');
 const N1qlQuery = couchbase.N1qlQuery;
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
-const uuidv4 = require('uuid/v4');
+const roles = require('./../config/roles');
+const { v4: uuidv4 } = require('uuid');
 const validator = require('validator');
 
 const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';

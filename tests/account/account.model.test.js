@@ -6,7 +6,7 @@ const dirtyChai = require('dirty-chai');
 const expect = chai.expect;
 const N1qlQuery = couchbase.N1qlQuery;
 const roles = require('./../../config/roles');
-const uuidv4 = require('uuid/v4');
+const { v4: uuidv4 } = require('uuid');
 
 chai.use(dirtyChai);
 
@@ -1051,8 +1051,12 @@ describe('Account Model Update role', () => {
     });
 
     // Property Type
-    it( 'update_GoodRole_GoodUser_Result should be a boolean', () => {
-      expect( update_GoodRole_GoodUser_Result ).to.be.a( 'boolean' );
+    it( 'update_GoodRole_GoodUser_Result should be a Object', () => {
+      expect( update_GoodRole_GoodUser_Result ).to.be.a( 'Object' );
+    });
+
+    it( 'update_GoodRole_GoodUser_Result result should be a boolean', () => {
+      expect( update_GoodRole_GoodUser_Result.result ).to.be.a( 'boolean' );
     });
 
     // Return Value
@@ -1063,6 +1067,8 @@ describe('Account Model Update role', () => {
   });
 
   describe( 'Add Bad Role to Good Account', () => {
+    let update_BadRole_GoodUser_Result;
+
     function updateRole( next ) {
 
       next();
@@ -1076,14 +1082,41 @@ describe('Account Model Update role', () => {
     after( done => done() );
 
     // Property Exists
-  
+    it( 'update_BadRole_GoodUser_Result should NOT have property error', () => {
+      expect( update_BadRole_GoodUser_Result ).to.not.have.property( 'error' );
+    });
+
+    it( 'update_BadRole_GoodUser_Result should have property msg', () => {
+      expect( update_BadRole_GoodUser_Result ).to.have.property( 'msg' );
+    });
+
+    it( 'update_BadRole_GoodUser_Result should have property result', () => {
+      expect( update_BadRole_GoodUser_Result ).to.have.property( 'result' );
+    });
+
     // Property Type
-  
+    it( 'update_BadRole_GoodUser_Result should be a Object', () => {
+      expect( update_BadRole_GoodUser_Result ).to.be.a( 'Object' );
+    });
+    
+    it( 'update_BadRole_GoodUser_Result msg should be a string', () => {
+      expect( update_BadRole_GoodUser_Result.msg ).to.be.a( 'string' );
+    });
+
+    it( 'update_BadRole_GoodUser_Result result should be a boolean', () => {
+      expect( update_BadRole_GoodUser_Result.result ).to.be.a( 'boolean' );
+    });
+
     // Return Value
+    it( 'update_BadRole_GoodUser_Result result should have value of false', () => {
+      expect( update_BadRole_GoodUser_Result.result ).to.equal( false );
+    });
   
   });
 
   describe( 'Add Good Role to Bad Account', () => {
+    let update_GoodRole_BadUser_Result;
+
     function updateRole( next ) {
 
       next();
@@ -1097,11 +1130,35 @@ describe('Account Model Update role', () => {
     after( done => done() );
 
     // Property Exists
-  
+    it( 'update_GoodRole_BadUser_Result should NOT have property error', () => {
+      expect( update_GoodRole_BadUser_Result ).to.not.have.property( 'error' );
+    });
+
+    it( 'update_GoodRole_BadUser_Result should have property msg', () => {
+      expect( update_GoodRole_BadUser_Result ).to.have.property( 'msg' );
+    });
+
+    it( 'update_GoodRole_BadUser_Result should have property result', () => {
+      expect( update_GoodRole_BadUser_Result ).to.have.property( 'result' );
+    });
+
     // Property Type
-  
+    it( 'update_GoodRole_BadUser_Result should be a Object', () => {
+      expect( update_GoodRole_BadUser_Result ).to.be.a( 'Object' );
+    });
+    
+    it( 'update_GoodRole_BadUser_Result msg should be a string', () => {
+      expect( update_GoodRole_BadUser_Result.msg ).to.be.a( 'string' );
+    });
+
+    it( 'update_GoodRole_BadUser_Result result should be a boolean', () => {
+      expect( update_GoodRole_BadUser_Result.result ).to.be.a( 'boolean' );
+    });
+
     // Return Value
-  
+    it( 'update_GoodRole_BadUser_Result result should have value of false', () => {
+      expect( update_GoodRole_BadUser_Result.result ).to.equal( false );
+    });
   });
 
 });
