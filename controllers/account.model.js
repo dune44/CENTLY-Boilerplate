@@ -186,11 +186,6 @@ const accountModel = {
                                 console.log(e);
                                 next({ "error": e, "msg": 'An error occured', "result": false });
                             }else{
-                                
-                                console.log( 'update meta status' );
-                                console.log( m.status );
-                                console.log( 'update meta mutationCount' );
-                                console.log( m.metrics.mutationCount );
                                 if( m.status == 'success' && m.metrics.mutationCount == 1 )
                                     next({ "result": true });
                                 else
