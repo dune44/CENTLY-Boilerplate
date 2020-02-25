@@ -1,6 +1,6 @@
 const async = require('wrap-sync');
 const osom = require('osom');
-const uuidv4 = require('uuid/v4');
+const { v4: uuidv4 } = require('uuid');
 
 /*
     Model for User login

@@ -173,7 +173,38 @@ const accountModel = {
 
         },
         role: ( uid, role, next ) => {
+            if( accountMethod.roleExists( role ) ) {
+                accountModel.Read.accountById( uid, ( acct ) => {
+                    if( acct.result ) {
+                        if( acct.data.roles ) acct.data.roles.push(role);
+                        else acct.data.roles = [ role ];
 
+                        const q = N1qlQuery.fromString('UPDATE `'+process.env.BUCKET+'` SET roles = ' + JSON.stringify( acct.data.roles ) + ' WHERE _type == "account" AND _id == "' + uid + '" ');
+                        db.query(q, function(e, r, m) {
+                            if(e){
+                                console.log('error in accountModel.Update.role');
+                                console.log(e);
+                                next({ "error": e, "msg": 'An error occured', "result": false });
+                            }else{
+                                
+                                console.log( 'update meta status' );
+                                console.log( m.status );
+                                console.log( 'update meta mutationCount' );
+                                console.log( m.metrics.mutationCount );
+                                if( m.status == 'success' && m.metrics.mutationCount == 1 )
+                                    next({ "result": true });
+                                else
+                                    next({ "msg": 'Not a successful update.', "result": false });
+                            }
+                        });
+
+                    } else {
+                        next({ "msg": 'No such user.', "result": false });
+                    }
+                });
+            } else {
+                next({ "msg": 'No such role.', "result": false });
+            }
         },
         token: ( uid, account, next ) => {
           const token = jwt.sign({ _id: uid }, process.env.JWT_SECRET, { expiresIn: '7 days' } );
@@ -257,9 +288,11 @@ const accountMethod = {
         account.deleted = false;
         return ({ result, msg, account });
     },
+    roleExists: ( role ) => {
+        return roles.includes(role);
+    },
     validateEmail: ( email ) => validator.isEmail( email ),
     validatePassword: ( password ) => ( password.length >= 8 ),
     validateUsername: ( username ) => ( username.length >= 3 ),
-
 };
 module.exports = accountModel;
