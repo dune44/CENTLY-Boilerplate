@@ -114,10 +114,13 @@ const accountModel = {
               }
           });
         },
-        rolesById: (uid) => {
+        rolesById: ( uid, next)  => {
+            const bad_isInRoleMSG = 'Account not found.';
+
+            next();
 
         },
-        isInRole: (uid,role) => {
+        isInRole: ( uid, role, next ) => {
 
         },
         validateAccount: ( account, next ) => {
@@ -148,7 +151,7 @@ const accountModel = {
             }
           });
         },
-        verifyToken: ( token, next) => {
+        verifyToken: ( token, next ) => {
           jwt.verify(token, process.env.JWT_SECRET, ( e, decoded ) => {
             if( e ) {
               console.log('error in accountModel.Read.verifyToken');
