@@ -12,7 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 const validator = require('validator');
 
 const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
-
+const noAccountMSG = 'Account not found.';
 // Test to make sure newer couchbase have flushed api.
 //const collection = db.collection(process.env.BUCKET);
 // console.log(N1qlQuery);
@@ -29,7 +29,7 @@ const accountModel = {
                                 if( validModel.result ) {
                                     account = validModel.account;
                                     account.password = hash;
-                                    db.insert('account|'+account._id,account, function( e ) {
+                                    db.insert('account|'+account._id,account, function( e, r ) {
                                         if(e){
                                             console.log( 'Error: inserting account' );
                                             console.log( e );
@@ -115,7 +115,6 @@ const accountModel = {
           });
         },
         rolesById: ( uid, next)  => {
-            const bad_isInRoleMSG = 'Account not found.';
             const q = N1qlQuery.fromString('SELECT _id, `roles` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '" ');
             db.query(q, (e, r) => {
                 if(e){
@@ -127,7 +126,7 @@ const accountModel = {
                         const roles = ( r[0].roles ) ? r[0].roles : [] ;
                         next({ "data": roles, "result": true });
                     } else if( r.length === 0 ) {
-                        next({ "msg": bad_isInRoleMSG, "result": false });
+                        next({ "msg": noAccountMSG, "result": false });
                     } else {
                         next({ "msg": 'Unexpected result', "result": false });
                     }
@@ -135,9 +134,28 @@ const accountModel = {
             });
         },
         isInRole: ( uid, role, next ) => {
-
-            next();
-
+            if( accountMethod.roleExists( role ) ) {
+                const q = N1qlQuery.fromString('SELECT `roles` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '" ');
+                db.query(q, (e, r) => {
+                    if(e){
+                        console.log('error in accountModel.Read.accountById');
+                        console.log(e);
+                        next({ "msg": e, "result": false});
+                    }else{
+                        if( r.length === 1 ) {
+                            const roles = ( r[0].roles ) ? r[0].roles : [] ;
+                            const result = roles.includes(role);
+                            next({ "result": result });
+                        } else if( r.length === 0 ) {
+                            next({ "msg": noAccountMSG, "result": false });
+                        } else {
+                            next({ "msg": 'Unexpected result', "result": false });
+                        }
+                    }
+                });
+            } else {
+                next({ "msg": 'No such role.', "result": false });
+            }
         },
         validateAccount: ( account, next ) => {
           const validationerrmsg = 'Account validation failed.';
@@ -224,6 +242,7 @@ const accountModel = {
                 next({ "msg": 'No such role.', "result": false });
             }
         },
+        // TODO move to methods
         token: ( uid, account, next ) => {
           const token = jwt.sign({ _id: uid }, process.env.JWT_SECRET, { expiresIn: '7 days' } );
 
@@ -310,7 +329,7 @@ const accountMethod = {
         account.deleted = false;
         return ({ result, msg, account });
     },
-    roleExists: ( role ) => {
+    roleExists: ( role, next ) => {
         return roles.includes(role);
     },
     validateEmail: ( email ) => validator.isEmail( email ),
