@@ -375,6 +375,7 @@ describe( 'Account Model Create a second user', () => {
     };
     accountModel.Create.account( testUser2, ( goodResult ) => {
       newAccount2 = goodResult;
+      testAccount2UID = goodResult.data._id;
       next();
     });
   }
@@ -1214,8 +1215,8 @@ describe( 'Account Model Read rolesById', () => {
       expect( read_pop_RolesResult ).to.be.a( 'Object' );
     });
 
-    it( 'read_pop_RolesResult data should be a array', () => {
-      expect( read_pop_RolesResult ).to.be.a( 'array' );
+    it( 'read_pop_RolesResult data should be an array', () => {
+      expect( read_pop_RolesResult.data ).to.be.a( 'array' );
     });
 
     it( 'read_pop_RolesResult result should be a boolean', () => {
@@ -1234,7 +1235,7 @@ describe( 'Account Model Read rolesById', () => {
 
     function read_empty_RolesByID( next ) {
       accountModel.Read.rolesById( testAccount2UID, ( result ) => {
-        read_pop_RolesResult = result;
+        read_empty_RolesResult = result;
         next();
       });
     }
@@ -1270,7 +1271,7 @@ describe( 'Account Model Read rolesById', () => {
     });
 
     it( 'read_empty_RolesResult data should be a array', () => {
-        expect( read_empty_RolesResult ).to.be.a( 'array' );
+        expect( read_empty_RolesResult.data ).to.be.a( 'array' );
     });
 
     it( 'read_empty_RolesResult result should be a boolean', () => {
@@ -1288,7 +1289,10 @@ describe( 'Account Model Read rolesById', () => {
     let read_bad_RolesResult;
 
     function readRolesByID( next ) {
-      next();
+      accountModel.Read.rolesById( badUID, ( result ) => {
+        read_bad_RolesResult = result;
+        next();
+      });
     }
 
     before( ( done ) => {
@@ -1326,7 +1330,7 @@ describe( 'Account Model Read rolesById', () => {
     });
 
     it( 'read_bad_RolesResult result should be a boolean', () => {
-      expect( read_bad_RolesResult.msg ).to.be.a( 'boolean' );
+      expect( read_bad_RolesResult.result ).to.be.a( 'boolean' );
     });
 
     // Return Value
@@ -1345,7 +1349,7 @@ describe( 'Account Model Read isInRole', () => {
     let empty_isInRoleResult;
 
     function get_empty_IsInRole( next ) {
-      accountModel.Read.rolesById( testAccount2UID, ( result ) => {
+      accountModel.Read.isInRole( testAccount2UID, ( result ) => {
         empty_isInRoleResult = result;
         next();
       });
@@ -1404,7 +1408,7 @@ describe( 'Account Model Read isInRole', () => {
     let populated_isInRoleResult;
 
     function get_populated_IsInRole( next ) {
-      accountModel.Read.rolesById( testAccountUID, ( result ) => {
+      accountModel.Read.isInRole( testAccountUID, ( result ) => {
         populated_isInRoleResult = result;
         next();
       });
@@ -1472,7 +1476,7 @@ describe( 'Account Model Read isInRole', () => {
     let bad_isInRoleResult;
     const bad_isInRoleMSG = 'Account not found.';
     function get_bad_IsInRole( next ) {
-      accountModel.Read.rolesById( badUID, ( result ) => {
+      accountModel.Read.isInRole( badUID, ( result ) => {
         bad_isInRoleResult = result;
         next();
       });

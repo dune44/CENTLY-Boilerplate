@@ -116,11 +116,27 @@ const accountModel = {
         },
         rolesById: ( uid, next)  => {
             const bad_isInRoleMSG = 'Account not found.';
-
-            next();
-
+            const q = N1qlQuery.fromString('SELECT _id, `roles` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '" ');
+            db.query(q, (e, r) => {
+                if(e){
+                    console.log('error in accountModel.Read.accountById');
+                    console.log(e);
+                    next({ "msg": e, "result": false});
+                }else{
+                    if( r.length === 1 ) {
+                        const roles = ( r[0].roles ) ? r[0].roles : [] ;
+                        next({ "data": roles, "result": true });
+                    } else if( r.length === 0 ) {
+                        next({ "msg": bad_isInRoleMSG, "result": false });
+                    } else {
+                        next({ "msg": 'Unexpected result', "result": false });
+                    }
+                }
+            });
         },
         isInRole: ( uid, role, next ) => {
+
+            next();
 
         },
         validateAccount: ( account, next ) => {
@@ -169,10 +185,14 @@ const accountModel = {
         }
     },
     Update: {
-        account: () => {
+        account: ( account, next ) => {
+
+            next();
 
         },
-        password: () => {
+        password: ( uid, oldpassword, newpassword, next ) => {
+            
+            next();
 
         },
         role: ( uid, role, next ) => {
@@ -220,12 +240,16 @@ const accountModel = {
           // collection.Update({_id: account._id},account);
           next( tokens );
         },
-        twoStep: () => {
+        twoStep: ( next ) => {
+
+            next();
 
         }
     },
     Delete: {
-        account: () => {
+        account: ( uid, password, next) => {
+
+            next();
 
         }
     }
