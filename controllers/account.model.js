@@ -203,10 +203,29 @@ const accountModel = {
         }
     },
     Update: {
-        account: ( uid, account, next ) => {
-            
-            next();
-
+        email: ( uid, email, next ) => {
+            if( email ) {
+                if( !accountMethod.validateEmail( email ) ) {
+                    const emailMsg = 'Email is not valid.';
+                    next({ "msg": emailMsg, "result": false });
+                } else {
+                    const q = N1qlQuery.fromString('UPDATE `'+process.env.BUCKET+'` SET email = "' + email + '" WHERE _type == "account" AND _id == "' + uid + '" ');
+                    db.query(q, function(e, r, m) {
+                        if(e){
+                            console.log('error in accountModel.Update.email');
+                            console.log(e);
+                            next({ "error": e, "msg": 'An error occured', "result": false });
+                        }else{
+                            if( m.status == 'success' && m.metrics.mutationCount == 1 )
+                                next({ "result": true });
+                            else
+                                next({ "msg": 'Not a successful update.', "result": false });
+                        }
+                    });
+                }
+            } else {
+                next({ "msg": 'Email cannot be blank', "result": false});
+            }
         },
         password: ( uid, oldPassword, newPassword, next ) => {
             

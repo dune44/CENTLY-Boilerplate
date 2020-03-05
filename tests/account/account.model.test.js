@@ -1549,18 +1549,19 @@ describe( 'Account Model Read isInRole', () => {
 
 });
 
-describe('Update account', () => {
+describe('Update email', () => {
 
   describe( 'Update with a good email', () => {
     let update_email_Result;
-    const account = {
-      "username": username,
-      "email": "bob@somesite.com",
-    };
+    const email = "harvey@someothersite.com";
 
     function updateAccount( next ) {
-      accountModel.Update.account( testAccountUID, account, ( result ) => {
+      accountModel.Update.email( testAccountUID, email, ( result ) => {
         update_email_Result = result;
+        if(result.msg){
+          console.log( 'msg' );
+          console.log( result.msg);
+        } 
         next();
       });
   
@@ -1584,7 +1585,7 @@ describe('Update account', () => {
     });
 
     it( 'update_email_Result should have property result', () => {
-      expect( update_email_Result ).to.not.have.property( 'result' );
+      expect( update_email_Result ).to.have.property( 'result' );
     });
 
     // Property Type
@@ -1597,21 +1598,18 @@ describe('Update account', () => {
     });
 
     // Return Value
-    it( 'update_email_Result result should have value of false', () => {
-      expect( update_email_Result.result ).to.equal( false );
+    it( 'update_email_Result result should have value of true', () => {
+      expect( update_email_Result.result ).to.equal( true );
     });
 
   });
 
   describe( 'Update with a bad email', () => {
     let update_bad_email_Result;
-    const account = {
-      "username": username,
-      "email": "bob@somesitecom",
-    };
+    const email = "bob@somesitecom";
 
     function updateAccount( next ) {
-      accountModel.Update.account( testAccountUID, account, ( result ) => {
+      accountModel.Update.email( testAccountUID, email, ( result ) => {
         update_bad_email_Result = result;
         next();
       });
@@ -1636,7 +1634,7 @@ describe('Update account', () => {
     });
 
     it( 'update_bad_email_Result should have property result', () => {
-      expect( update_bad_email_Result ).to.not.have.property( 'result' );
+      expect( update_bad_email_Result ).to.have.property( 'result' );
     });
 
     // Property Type
