@@ -41,6 +41,7 @@ const username2 = 'testUser2';
 const password2 = 'A!3k90P2';
 const badUID = uuidv4();
 const badRole = 'MasterBlasterEatsMitosis';
+const badEmailMsg = 'Email is not valid.';
 
 describe( 'Account Model Create a user account', () => {
 
@@ -309,6 +310,10 @@ describe( 'Account Model Create a user account', () => {
     });
 
     // Return Value
+    it( 'newBadEmailAccount msg should have value of badEmailMsg', () => {
+      expect( newBadEmailAccount.msg ).to.equal( badEmailMsg );
+    });
+    
     it( 'newBadEmailAccount should have result of false', () => {
       expect( newBadEmailAccount.result ).to.equal( false );
     });
@@ -1546,7 +1551,7 @@ describe( 'Account Model Read isInRole', () => {
 
 describe('Update account', () => {
 
-  describe( 'Update email', () => {
+  describe( 'Update with a good email', () => {
     let update_email_Result;
     const account = {
       "username": username,
@@ -1570,13 +1575,93 @@ describe('Update account', () => {
     after( done => done() );
 
     // Property Exists
+    it( 'update_email_Result should NOT have property error', () => {
+      expect( update_email_Result ).to.not.have.property( 'error' );
+    });
+
+    it( 'update_email_Result should NOT have property msg', () => {
+      expect( update_email_Result ).to.not.have.property( 'msg' );
+    });
+
+    it( 'update_email_Result should have property result', () => {
+      expect( update_email_Result ).to.not.have.property( 'result' );
+    });
 
     // Property Type
+    it( 'update_email_Result should be an Object', () => {
+      expect( update_email_Result ).to.be.a( 'Object' );
+    });
+
+    it( 'update_email_Result result should be a boolean', () => {
+      expect( update_email_Result.result ).to.be.a( 'boolean' );
+    });
 
     // Return Value
+    it( 'update_email_Result result should have value of false', () => {
+      expect( update_email_Result.result ).to.equal( false );
+    });
 
   });
 
+  describe( 'Update with a bad email', () => {
+    let update_bad_email_Result;
+    const account = {
+      "username": username,
+      "email": "bob@somesitecom",
+    };
+
+    function updateAccount( next ) {
+      accountModel.Update.account( testAccountUID, account, ( result ) => {
+        update_bad_email_Result = result;
+        next();
+      });
+  
+    }
+  
+    before( ( done ) => {
+  
+      updateAccount( done );
+  
+    });
+  
+    after( done => done() );
+
+    // Property Exists
+    it( 'update_bad_email_Result should NOT have property error', () => {
+      expect( update_bad_email_Result ).to.not.have.property( 'error' );
+    });
+
+    it( 'update_bad_email_Result should have property msg', () => {
+      expect( update_bad_email_Result ).to.have.property( 'msg' );
+    });
+
+    it( 'update_bad_email_Result should have property result', () => {
+      expect( update_bad_email_Result ).to.not.have.property( 'result' );
+    });
+
+    // Property Type
+    it( 'update_bad_email_Result should be an Object', () => {
+      expect( update_bad_email_Result ).to.be.a( 'Object' );
+    });
+
+    it( 'update_bad_email_Result msg should be a string', () => {
+      expect( update_bad_email_Result.msg ).to.be.a( 'string' );
+    });
+
+    it( 'update_bad_email_Result result should be a boolean', () => {
+      expect( update_bad_email_Result.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'update_bad_email_Result msg should have value of badEmailMsg', () => {
+      expect( update_bad_email_Result.msg ).to.equal( badEmailMsg );
+    });
+
+    it( 'update_bad_email_Result result should have value of false', () => {
+      expect( update_bad_email_Result.result ).to.equal( false );
+    });
+
+  });
 
 });
 

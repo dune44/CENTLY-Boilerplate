@@ -23,7 +23,7 @@ const accountModel = {
             if( !accountMethod.disallowedName( account.username ) ) {
                 accountMethod.duplicateName( account.username, ( duplicate ) => {
                     if( !duplicate ) {
-                        accountMethod.ink(account.password, ( hash, inkmsg ) => {
+                        accountMethod.ink(account.password, ( hash, inkMsg ) => {
                             if( hash ) {
                                 const validModel = accountMethod.preValidateModel( account );
                                 if( validModel.result ) {
@@ -33,7 +33,7 @@ const accountModel = {
                                         if(e){
                                             console.log( 'Error: inserting account' );
                                             console.log( e );
-                                            next({ "msg": "An error occured. Account not created.", "error": e, "result": false });
+                                            next({ "msg": "An error occurred. Account not created.", "error": e, "result": false });
                                         } else {
                                             next({ "data": account, "result": true });
                                         }
@@ -42,7 +42,7 @@ const accountModel = {
                                     next({ "msg": validModel.msg, "result": false});
                                 }
                             } else {
-                                next({ "msg": inkmsg, "result": false });
+                                next({ "msg": inkMsg, "result": false });
                             }
 
                         });
@@ -204,7 +204,7 @@ const accountModel = {
     },
     Update: {
         account: ( uid, account, next ) => {
-
+            
             next();
 
         },
@@ -313,15 +313,15 @@ const accountMethod = {
         let result = true, msg = '';
         if( !accountMethod.validateEmail( account.email ) ) {
             result = false;
-            msg = ' Email is not valid. ';
+            msg = 'Email is not valid.';
         }
         if( !accountMethod.validatePassword( account.password ) ) {
             result = false;
-            msg += ' Password is too short. ';
+            msg += 'Password is too short.';
         }
         if( !accountMethod.validateUsername( account.username ) ) {
             result = false;
-            msg += ' Username is too short. ';
+            msg += 'Username is too short.';
         }
         account._id = uuidv4();
         account._type = 'account';
@@ -329,7 +329,7 @@ const accountMethod = {
         account.deleted = false;
         return ({ result, msg, account });
     },
-    roleExists: ( role, next ) => {
+    roleExists: ( role ) => {
         return roles.includes(role);
     },
     validateEmail: ( email ) => validator.isEmail( email ),
