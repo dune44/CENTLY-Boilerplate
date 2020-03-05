@@ -203,12 +203,12 @@ const accountModel = {
         }
     },
     Update: {
-        account: ( account, next ) => {
+        account: ( uid, account, next ) => {
 
             next();
 
         },
-        password: ( uid, oldpassword, newpassword, next ) => {
+        password: ( uid, oldPassword, newPassword, next ) => {
             
             next();
 
@@ -282,7 +282,7 @@ const accountMethod = {
     disallowedName: ( username ) => {
         const nameList =[
             "admin",
-            "administrater",
+            "administrator",
             "username"
         ];
         return ( nameList.indexOf( username ) > -1 );

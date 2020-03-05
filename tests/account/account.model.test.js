@@ -35,12 +35,12 @@ let newAccount,
   newBadEmailAccount,
   validationToken;
 
-const username = 'testuser';
+const username = 'testUser';
 const password = '1A2b6O!b';
-const username2 = 'testuser2';
+const username2 = 'testUser2';
 const password2 = 'A!3k90P2';
 const badUID = uuidv4();
-const badRole = 'MasterBlasterEatsMytosis';
+const badRole = 'MasterBlasterEatsMitosis';
 
 describe( 'Account Model Create a user account', () => {
 
@@ -117,48 +117,48 @@ describe( 'Account Model Create a user account', () => {
   }
 
   function initializeAccount( next ) {
-      const testUser = {
+      const testUserObj = {
           "username": username,
           "password": password,
           "email": "bob@somesite.com",
       };
-      accountModel.Create.account( testUser, ( goodResult ) => {
+      accountModel.Create.account( testUserObj, ( goodResult ) => {
           newAccount = goodResult;
           next();
       });
   }
 
   function initializeBadPasswordAccount( next ) {
-      const testUser = {
-          "username": "testuser2",
+      const testUserObj = {
+          "username": "testUser2",
           "password":"1A2b6b",
           "email": "dune44@hotmail.com",
       };
-      accountModel.Create.account(testUser, (badResult) => {
+      accountModel.Create.account(testUserObj, (badResult) => {
           newBadPasswordAccount = badResult;
           next();
       });
   }
 
   function initializeBadUsernameAccount( next ){
-      const testUser = {
+      const testUserObj = {
           "username": "te",
           "password":"2M@iP931p",
           "email": "dune44@hotmail.com",
       };
-      accountModel.Create.account(testUser, (badResult) => {
+      accountModel.Create.account(testUserObj, (badResult) => {
           newBadUsernameAccount = badResult;
           next();
       });
   }
 
   function initializeBadEmailAccount( next ){
-      const testUser = {
-          "username": "testuser3",
+      const testUserObj = {
+          "username": "testUser3",
           "password":"2M@iP931p",
           "email": "hotmail.com",
       };
-      accountModel.Create.account(testUser, (badResult) => {
+      accountModel.Create.account(testUserObj, (badResult) => {
           newBadEmailAccount = badResult;
           next();
       });
@@ -322,12 +322,12 @@ describe( 'Account Model Create a duplicate username in account', () => {
   let newBadDuplicateNameAccount;
 
   function attemptDuplicateUsername( next ) {
-    const testUser = {
+    const testUserObj = {
       "username": username,
       "password":"8I3a9B!bc",
       "email": "fred@somesite.com",
     };
-    accountModel.Create.account(testUser, ( result ) => {
+    accountModel.Create.account(testUserObj, ( result ) => {
       newBadDuplicateNameAccount = result;
       next();
     });
@@ -369,12 +369,12 @@ describe( 'Account Model Create a duplicate username in account', () => {
 describe( 'Account Model Create a second user', () => {
 
   function initializeSecondAccount( next ) {
-    const testUser2 = {
+    const testUserObj2 = {
         "username": username2,
         "password": password2,
         "email": "steve@somesite.com",
     };
-    accountModel.Create.account( testUser2, ( goodResult ) => {
+    accountModel.Create.account( testUserObj2, ( goodResult ) => {
       newAccount2 = goodResult;
       testAccount2UID = goodResult.data._id;
       next();
@@ -536,7 +536,7 @@ describe( 'Account Model Read accountByUsername', () => {
     describe( 'Read Account with Bad Username', () => {
 
     let readBadUsernameAccountResult;
-    const badUsername_ReadBadUsernameAccount = 'WillowOfWindsleyDate';
+    const badUsername_ReadBadUsernameAccount = 'WillowOfWindsDate';
     const msgReadBadUsernameAccountResult = 'Result not found for ' + badUsername_ReadBadUsernameAccount;
     const badMsg_ReadBadUsernameAccount = 'There is a duplicate found for ' + username;
 
@@ -702,7 +702,7 @@ describe( 'Account Model Read accountById', () => {
     let readBadUIDAccountResult;
     const badUIDMsg = 'no user found.';
 
-    function badUID_readAccountbyID( next ) {
+    function badUID_readAccountByID( next ) {
       accountModel.Read.accountById( badUID, ( result ) => {
         readBadUIDAccountResult = result;
         next();
@@ -710,7 +710,7 @@ describe( 'Account Model Read accountById', () => {
     }
 
     before( ( done ) => {
-      badUID_readAccountbyID( done );
+      badUID_readAccountByID( done );
     });
 
     after( ( done ) => {
@@ -771,7 +771,7 @@ describe( 'Account Model Read All', () => {
     done();
   });
 
-  // Porperty Exists
+  // Property Exists
   it( 'readAllResult should NOT have property msg', () => {
     expect(readAllResult).to.have.not.property('msg');
   });
@@ -793,50 +793,50 @@ describe( 'Account Model Read All', () => {
 
 describe( 'Account Model Read Validate Credentials', () => {
 
-  let badUsernameLoginResult, badPasswordLoginResult, goodLogingResult;
-  const validationerrmsg = 'Account validation failed.';
+  let badUsernameLoginResult, badPasswordLoginResult, goodLoggingResult;
+  const validationErrMsg = 'Account validation failed.';
   const fauxIPS = { "ip": "10.0.0.0", "fwdIP": "5.0.0.0" };
 
-  function attemptbadUsernameLogin( next ) {
-    const testUser = {
-        "username": "babbadleroybrown",
+  function attemptBadUsernameLogin( next ) {
+    const testUserObj = {
+        "username": "babBadLeroyBrown",
         "password": "85Ie!ki49p",
         "ips": fauxIPS,
     };
-    accountModel.Read.validateAccount( testUser, ( result ) => {
+    accountModel.Read.validateAccount( testUserObj, ( result ) => {
       badUsernameLoginResult = result;
       next();
     });
   }
 
-  function attemptbadPasswordLogin( next ) {
-    const testUser = {
+  function attemptBadPasswordLogin( next ) {
+    const testUserObj = {
         "username": username,
         "password": "2M@55iP931p",
         "ips": fauxIPS,
     };
-    accountModel.Read.validateAccount( testUser, ( result ) => {
+    accountModel.Read.validateAccount( testUserObj, ( result ) => {
       badPasswordLoginResult = result;
       next();
     });
   }
 
   function attemptGoodLogin( next ) {
-    const testUser = {
+    const testUserObj = {
       "username": username,
       "password": password,
       "ips": fauxIPS,
     };
-    accountModel.Read.validateAccount( testUser, ( result ) => {
+    accountModel.Read.validateAccount( testUserObj, ( result ) => {
       validationToken = result.token;
-      goodLogingResult = result;
+      goodLoggingResult = result;
       next();
     });
   }
 
   before( ( done ) => {
-    attemptbadUsernameLogin( () => {
-      attemptbadPasswordLogin( () => {
+    attemptBadUsernameLogin( () => {
+      attemptBadPasswordLogin( () => {
         attemptGoodLogin( done );
       });
     });
@@ -878,8 +878,8 @@ describe( 'Account Model Read Validate Credentials', () => {
       expect( badUsernameLoginResult.result ).to.equal( false );
     });
 
-    it( 'badUsernameLoginResult msg should have value of var validationerrmsg: ' + validationerrmsg, () => {
-      expect( badUsernameLoginResult.msg ).to.equal( validationerrmsg );
+    it( 'badUsernameLoginResult msg should have value of var validationErrMsg: ' + validationErrMsg, () => {
+      expect( badUsernameLoginResult.msg ).to.equal( validationErrMsg );
     });
 
   });
@@ -916,42 +916,42 @@ describe( 'Account Model Read Validate Credentials', () => {
       expect( badPasswordLoginResult.result ).to.equal( false );
     });
 
-    it( 'badPasswordLoginResult msg should have value of var validationerrmsg: ' + validationerrmsg, () => {
-      expect( badPasswordLoginResult.msg ).to.equal( validationerrmsg );
+    it( 'badPasswordLoginResult msg should have value of var validationErrMsg: ' + validationErrMsg, () => {
+      expect( badPasswordLoginResult.msg ).to.equal( validationErrMsg );
     });
 
   });
 
   describe( 'Test good login', () => {
-    // Property Existence -- ( goodLogingResult )
-    it( 'goodLogingResult should NOT have property data', () => {
-      expect( goodLogingResult ).to.not.have.property( 'data' );
+    // Property Existence -- ( goodLoggingResult )
+    it( 'goodLoggingResult should NOT have property data', () => {
+      expect( goodLoggingResult ).to.not.have.property( 'data' );
     });
 
-    it( 'goodLogingResult should NOT have property msg', () => {
-      expect( goodLogingResult ).to.not.have.property( 'msg' );
+    it( 'goodLoggingResult should NOT have property msg', () => {
+      expect( goodLoggingResult ).to.not.have.property( 'msg' );
     });
 
-    it( 'goodLogingResult should have property result', () => {
-      expect( goodLogingResult ).to.have.property( 'result' );
+    it( 'goodLoggingResult should have property result', () => {
+      expect( goodLoggingResult ).to.have.property( 'result' );
     });
 
-    it( 'goodLogingResult should have property token', () => {
-      expect( goodLogingResult ).to.have.property( 'token' );
+    it( 'goodLoggingResult should have property token', () => {
+      expect( goodLoggingResult ).to.have.property( 'token' );
     });
 
-    // Property Type -- ( goodLogingResult )
-    it( 'goodLogingResult result should be a boolean', () => {
-      expect( goodLogingResult.result ).to.be.a( 'boolean' );
+    // Property Type -- ( goodLoggingResult )
+    it( 'goodLoggingResult result should be a boolean', () => {
+      expect( goodLoggingResult.result ).to.be.a( 'boolean' );
     });
 
-    it( 'goodLogingResult token should be a string', () => {
-      expect( goodLogingResult.token ).to.be.a( 'string' );
+    it( 'goodLoggingResult token should be a string', () => {
+      expect( goodLoggingResult.token ).to.be.a( 'string' );
     });
 
-    // Return Value -- ( goodLogingResult )
-    it( 'goodLogingResult result should have value of true', () => {
-      expect( goodLogingResult.result ).to.equal( true );
+    // Return Value -- ( goodLoggingResult )
+    it( 'goodLoggingResult result should have value of true', () => {
+      expect( goodLoggingResult.result ).to.equal( true );
     });
 
   });
@@ -1545,6 +1545,38 @@ describe( 'Account Model Read isInRole', () => {
 });
 
 describe('Update account', () => {
+
+  describe( 'Update email', () => {
+    let update_email_Result;
+    const account = {
+      "username": username,
+      "email": "bob@somesite.com",
+    };
+
+    function updateAccount( next ) {
+      accountModel.Update.account( testAccountUID, account, ( result ) => {
+        update_email_Result = result;
+        next();
+      });
+  
+    }
+  
+    before( ( done ) => {
+  
+      updateAccount( done );
+  
+    });
+  
+    after( done => done() );
+
+    // Property Exists
+
+    // Property Type
+
+    // Return Value
+
+  });
+
 
 });
 

@@ -3,6 +3,7 @@
 .directory
 .gitignore
 coverage
+cspell.json
 
 # Unneeded files
 package-lock.json

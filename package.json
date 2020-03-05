@@ -42,7 +42,7 @@
     "osom": "3.0.3",
     "qrcode": "1.4.4",
     "speakeasy": "2.0.0",
-    "uuid": "7.0.1",
+    "uuid": "7.0.2",
     "validator": "12.2.0",
     "wrap-sync": "1.0.0"
   },
