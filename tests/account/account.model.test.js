@@ -42,6 +42,7 @@ const password2 = 'A!3k90P2';
 const badUID = uuidv4();
 const badRole = 'MasterBlasterEatsMitosis';
 const badEmailMsg = 'Email is not valid.';
+const badUIDMsg = 'No Account found.';
 
 describe( 'Account Model Create a user account', () => {
 
@@ -705,7 +706,6 @@ describe( 'Account Model Read accountById', () => {
   describe( 'Read Account with Bad UID', () => {
 
     let readBadUIDAccountResult;
-    const badUIDMsg = 'no user found.';
 
     function badUID_readAccountByID( next ) {
       accountModel.Read.accountById( badUID, ( result ) => {
@@ -1661,16 +1661,112 @@ describe('Update email', () => {
 
   });
 
+  describe( 'update using bad uid', () => {
+    let update_badUid_email_Result;
+    const email = "b.smith@somesite.com";
+
+    function updateAccount( next ) {
+      accountModel.Update.email( badUID, email, ( result ) => {
+        update_badUid_email_Result = result;
+        next();
+      });
+  
+    }
+  
+    before( ( done ) => {
+  
+      updateAccount( done );
+  
+    });
+  
+    after( done => done() );
+
+    // Property Exists
+    it( 'update_badUid_email_Result should NOT have property error', () => {
+      expect( update_badUid_email_Result ).to.not.have.property( 'error' );
+    });
+
+    it( 'update_badUid_email_Result should have property msg', () => {
+      expect( update_badUid_email_Result ).to.have.property( 'msg' );
+    });
+
+    it( 'update_badUid_email_Result should have property result', () => {
+      expect( update_badUid_email_Result ).to.have.property( 'result' );
+    });
+
+    // Property Type
+    it( 'update_badUid_email_Result should be an Object', () => {
+      expect( update_badUid_email_Result ).to.be.a( 'Object' );
+    });
+
+    it( 'update_badUid_email_Result msg should be a string', () => {
+      expect( update_badUid_email_Result.msg ).to.be.a( 'string' );
+    });
+
+    it( 'update_badUid_email_Result result should be a boolean', () => {
+      expect( update_badUid_email_Result.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'update_badUid_email_Result msg should have value of badUIDMsg', () => {
+      expect( update_badUid_email_Result.msg ).to.equal( badUIDMsg );
+    });
+
+    it( 'update_badUid_email_Result result should have value of false', () => {
+      expect( update_badUid_email_Result.result ).to.equal( false );
+    });
+  });
+
 });
 
 describe('Update password', () => {
+
+  describe( 'Update using good password', () => {
+
+    // Property Exists
+  
+    // Property Type
+  
+    // Return Value
+  
+  });
+
+  describe( 'Update using bad password', () => {
+
+    // Property Exists
+  
+    // Property Type
+  
+    // Return Value
+  
+  });
 
 });
 
 describe('Update twoStep', () => {
 
+  describe( '', () => {
+
+    // Property Exists
+  
+    // Property Type
+  
+    // Return Value
+  
+  });
+
 });
 
 describe('Delete account', () => {
+
+  describe( '', () => {
+
+    // Property Exists
+  
+    // Property Type
+  
+    // Return Value
+  
+  });
 
 });

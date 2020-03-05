@@ -69,7 +69,7 @@ const accountModel = {
                     if( r.length === 1 ) {
                         next({ "data": r[0], "result": true });
                     } else if( r.length === 0 ) {
-                        next({ "msg": 'no user found.', "result": false });
+                        next({ "msg": 'No Account found.', "result": false });
                     } else {
                         next({ "msg": 'Unexpected result', "result": false });
                     }
@@ -218,8 +218,13 @@ const accountModel = {
                         }else{
                             if( m.status == 'success' && m.metrics.mutationCount == 1 )
                                 next({ "result": true });
-                            else
-                                next({ "msg": 'Not a successful update.', "result": false });
+                            else {
+                                if( r.length === 0 ) {
+                                    next({ "msg": 'No Account found.', "result": false });
+                                } else {
+                                    next({ "msg": 'Not a successful update.', "result": false });
+                                }
+                            }
                         }
                     });
                 }
