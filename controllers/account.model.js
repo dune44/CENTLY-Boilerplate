@@ -11,8 +11,8 @@ const roles = require('./../config/roles');
 const { v4: uuidv4 } = require('uuid');
 const validator = require('validator');
 
+const errMsg = require('./account.errMsg');
 const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
-const noAccountMSG = 'Account not found.';
 // Test to make sure newer couchbase have flushed api.
 //const collection = db.collection(process.env.BUCKET);
 // console.log(N1qlQuery);
@@ -69,7 +69,7 @@ const accountModel = {
                     if( r.length === 1 ) {
                         next({ "data": r[0], "result": true });
                     } else if( r.length === 0 ) {
-                        next({ "msg": 'No Account found.', "result": false });
+                        next({ "msg": errMsg.accountNotFound, "result": false });
                     } else {
                         next({ "msg": 'Unexpected result', "result": false });
                     }
@@ -126,7 +126,7 @@ const accountModel = {
                         const roles = ( r[0].roles ) ? r[0].roles : [] ;
                         next({ "data": roles, "result": true });
                     } else if( r.length === 0 ) {
-                        next({ "msg": noAccountMSG, "result": false });
+                        next({ "msg": errMsg.accountNotFound, "result": false });
                     } else {
                         next({ "msg": 'Unexpected result', "result": false });
                     }
@@ -147,43 +147,32 @@ const accountModel = {
                             const result = roles.includes(role);
                             next({ "result": result });
                         } else if( r.length === 0 ) {
-                            next({ "msg": noAccountMSG, "result": false });
+                            next({ "msg": errMsg.accountNotFound, "result": false });
                         } else {
                             next({ "msg": 'Unexpected result', "result": false });
                         }
                     }
                 });
             } else {
-                next({ "msg": 'No such role.', "result": false });
+                next({ "msg": errMsg.roleInvalid, "result": false });
             }
         },
-        validateAccount: ( account, next ) => {
-          const validationerrmsg = 'Account validation failed.';
-          const q = N1qlQuery.fromString('SELECT ' + fields + ', `password` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND `username` == "' + account.username + '"');
-          db.query(q, function(e, r) {
-            if(e){
-              console.log('error in accountModel.Read.validateAccount');
-              console.log(e);
-              next({ "error": e, "msg": 'An error occured', "result": false });
-            }else{
-              if ( r.length === 1 ) {
-                    accountMethod.passwordCompare( account.password, r[0].password, ( result ) => {
-                      if( result ){
-                        accountModel.Update.token( r[0]._id, account, ( tokens ) => {
-                          next({ "result": result, "token": tokens.token });
-                        });
-                      } else {
-                        next({ "msg": validationerrmsg, "result": false });
-                      }
-                    });
-              } else if( r.length === 0 ) {
-                next({ "msg": validationerrmsg, "result": false });
-              } else {
-                console.log('unexpected length of ' + r.length);
-                next({ "msg": "data length unexpected.", "result": false });
-              }
-            }
-          });
+        validateAccount: ( validationObj, next ) => {
+            accountMethod.getUserById( validationObj.uid, ( account ) => {
+                if( account.result ) {
+                    accountMethod.passwordCompare( validationObj.password, account.data.password, ( result ) => {
+                        if( result ){
+                          accountMethod.updateToken( validationObj, ( tokens ) => {
+                            next({ "result": result, "token": tokens.token });
+                          });
+                        } else {
+                          next({ "msg": errMsg.accountValidationFailure, "result": false });
+                        }
+                      });
+                } else {
+                    next( account );
+                }
+            });  
         },
         verifyToken: ( token, next ) => {
           jwt.verify(token, process.env.JWT_SECRET, ( e, decoded ) => {
@@ -206,23 +195,22 @@ const accountModel = {
         email: ( uid, email, next ) => {
             if( email ) {
                 if( !accountMethod.validateEmail( email ) ) {
-                    const emailMsg = 'Email is not valid.';
-                    next({ "msg": emailMsg, "result": false });
+                    next({ "msg": errMsg.emailInvalid, "result": false });
                 } else {
-                    const q = N1qlQuery.fromString('UPDATE `'+process.env.BUCKET+'` SET email = "' + email + '" WHERE _type == "account" AND _id == "' + uid + '" ');
+                    const q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET + '` SET email = "' + email + '" WHERE _type == "account" AND _id == "' + uid + '" ');
                     db.query(q, function(e, r, m) {
                         if(e){
                             console.log('error in accountModel.Update.email');
                             console.log(e);
-                            next({ "error": e, "msg": 'An error occured', "result": false });
+                            next({ "error": e, "msg": errMsg.errorMsg, "result": false });
                         }else{
                             if( m.status == 'success' && m.metrics.mutationCount == 1 )
                                 next({ "result": true });
                             else {
                                 if( r.length === 0 ) {
-                                    next({ "msg": 'No Account found.', "result": false });
+                                    next({ "msg": errMsg.accountNotFound, "result": false });
                                 } else {
-                                    next({ "msg": 'Not a successful update.', "result": false });
+                                    next({ "msg": errMsg.updateGenericFail, "result": false });
                                 }
                             }
                         }
@@ -233,9 +221,41 @@ const accountModel = {
             }
         },
         password: ( uid, oldPassword, newPassword, next ) => {
-            
-            next();
-
+            if( accountMethod.validatePassword( newPassword ) ) {
+                accountMethod.getUserById( uid, ( account ) => {
+                    if( account.result ) {
+                        accountMethod.passwordCompare( oldPassword, account.data.password, ( compareResult ) => {
+                            if( compareResult ) {
+                                accountMethod.ink( newPassword, ( hash, inkMsg) => {
+                                    if( hash ) {
+                                        let q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET + '` SET `password` = $1 WHERE _type == "account" AND _id == "' + uid + '" ');
+                                        db.query(q, ['hash'], function(e, r, m) {
+                                            if(e){
+                                                console.log('error in accountModel.Update.password');
+                                                console.log(e);
+                                                next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+                                            }else{
+                                                if( m.status == 'success' && m.metrics.mutationCount == 1 )
+                                                    next({ "result": true });
+                                                else
+                                                    next({ "msg": 'Not a successful update.', "result": false });
+                                            }
+                                        });
+                                    } else {
+                                        next({ "msg": inkMsg, "result": false });
+                                    }
+                                });
+                            } else {
+                                next({ "msg": errMsg.accountValidationFailure, "result": false });
+                            }
+                        });
+                    } else {
+                        next( account );
+                    }
+                });
+            } else {
+                next({ "msg": errMsg.passwordTooShort, "result": false });
+            }
         },
         role: ( uid, role, next ) => {
             if( accountMethod.roleExists( role ) ) {
@@ -249,7 +269,7 @@ const accountModel = {
                             if(e){
                                 console.log('error in accountModel.Update.role');
                                 console.log(e);
-                                next({ "error": e, "msg": 'An error occured', "result": false });
+                                next({ "error": e, "msg": errMsg.errorMsg, "result": false });
                             }else{
                                 if( m.status == 'success' && m.metrics.mutationCount == 1 )
                                     next({ "result": true });
@@ -263,25 +283,8 @@ const accountModel = {
                     }
                 });
             } else {
-                next({ "msg": 'No such role.', "result": false });
+                next({ "msg": errMsg.roleInvalid, "result": false });
             }
-        },
-        // TODO move to methods
-        token: ( uid, account, next ) => {
-          const token = jwt.sign({ _id: uid }, process.env.JWT_SECRET, { expiresIn: '7 days' } );
-
-          // add token to account with their current ip.
-          // add a forwarded IP to check if user has a proxy.
-          let tokens = {
-            token: token,
-              ips: {
-                ip: account.ips.ip,
-                fwdIP: account.ips.fwdIP
-              }
-          };
-
-          // collection.Update({_id: account._id},account);
-          next( tokens );
         },
         twoStep: ( next ) => {
 
@@ -297,6 +300,7 @@ const accountModel = {
         }
     }
 };
+// Non Public Methods
 const accountMethod = {
     duplicateName: ( username, next ) => {
       accountModel.Read.accountByUsername( username, ( r ) => {
@@ -311,16 +315,38 @@ const accountMethod = {
         ];
         return ( nameList.indexOf( username ) > -1 );
     },
+    getUserById: ( uid, next ) => {
+        const q = N1qlQuery.fromString('SELECT ' + fields + ', `password` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '"');
+        db.query(q, function(e, r) {
+            if(e){
+                console.log('error in accountMethod.getUserById');
+                console.log(e);
+                next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+            }else{
+                if( r.length === 1)
+                    next({ "data": r[0], "result": true });
+                else if( r.length === 0 )
+                    next({ "msg": errMsg.accountNotFound, "result": false });
+                else
+                    next({ "msg": errMsg.errorMsg, "result": false });
+            }
+        });
+    },
     ink: ( password, done ) => {
         bcrypt.genSalt( 5, function( e, salt ) {
-            if( e ) console.error( e );
-            bcrypt.hash( password, salt, function( er, hash ) {
-                if( er ) {
-                    console.error( er );
-                }else{
-                    done( hash, null );
-                }
-            });
+            if( e ) {
+                console.error( e );
+                done( false, e );
+            } else {
+                bcrypt.hash( password, salt, function( er, hash ) {
+                    if( er ) {
+                        console.error( er );
+                        done( false, er );
+                    }else{
+                        done( hash, null );
+                    }
+                });
+            }
         });
     },
     passwordCompare: ( pwd, hash, done ) => {
@@ -337,15 +363,15 @@ const accountMethod = {
         let result = true, msg = '';
         if( !accountMethod.validateEmail( account.email ) ) {
             result = false;
-            msg = 'Email is not valid.';
+            msg = errMsg.emailInvalid;
         }
         if( !accountMethod.validatePassword( account.password ) ) {
             result = false;
-            msg += 'Password is too short.';
+            msg += errMsg.passwordTooShort;
         }
         if( !accountMethod.validateUsername( account.username ) ) {
             result = false;
-            msg += 'Username is too short.';
+            msg += errMsg.usernameTooShort;
         }
         account._id = uuidv4();
         account._type = 'account';
@@ -356,8 +382,29 @@ const accountMethod = {
     roleExists: ( role ) => {
         return roles.includes(role);
     },
+    updateToken: ( validationObj, next ) => {
+        const token = jwt.sign({ _id: validationObj.uid }, process.env.JWT_SECRET, { expiresIn: '7 days' } );
+
+        // add token to account with their current ip.
+        // add a forwarded IP to check if user has a proxy.
+        let tokens = {
+          token: token,
+            ips: {
+              ip: validationObj.ips.ip,
+              fwdIP: validationObj.ips.fwdIP
+            }
+        };
+
+        // collection.Update({_id: account._id},account);
+        next( tokens );
+    },
     validateEmail: ( email ) => validator.isEmail( email ),
-    validatePassword: ( password ) => ( password.length >= 8 ),
+    validatePassword: ( password ) => {
+        if( password.length < 8 ) return false;
+        else return true;
+
+        // TODO add regex here.
+    },
     validateUsername: ( username ) => ( username.length >= 3 ),
 };
 module.exports = accountModel;

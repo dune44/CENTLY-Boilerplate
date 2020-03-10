@@ -15,6 +15,12 @@ Test Template
 
 describe( '', () => {
 
+  before( ( done ) => {
+    done();
+  });
+
+  after( done => done() );
+
   // Property Exists
 
   // Property Type
@@ -24,6 +30,68 @@ describe( '', () => {
 });
 
 */
+const errMsg = require('./../../controllers/account.errMsg');
+describe( 'Error msg sanity check.', () => {
+
+      // Property Existence
+      it( 'errMsg should have property accountNotFound', () => {
+        expect( errMsg ).to.have.property( 'accountNotFound' );
+      });
+
+      it( 'errMsg should have property emailInvalid', () => {
+        expect( errMsg ).to.have.property( 'emailInvalid' );
+      });
+      
+      it( 'errMsg should have property errorMsg', () => {
+        expect( errMsg ).to.have.property( 'errorMsg' );
+      });
+      
+      it( 'errMsg should have property passwordTooShort', () => {
+        expect( errMsg ).to.have.property( 'passwordTooShort' );
+      });
+
+      it( 'errMsg should have property roleInvalid', () => {
+        expect( errMsg ).to.have.property( 'roleInvalid' );
+      });
+
+      it( 'errMsg should have property usernameTooShort', () => {
+        expect( errMsg ).to.have.property( 'usernameTooShort' );
+      });
+
+      it( 'errMsg should have property updateGenericFail', () => {
+        expect( errMsg ).to.have.property( 'updateGenericFail' );
+      });
+
+      // Property Type
+      it( 'errMsg accountNotFound id should be a string', () => {
+        expect( errMsg.accountNotFound ).to.be.a( 'string' );
+      });
+
+      it( 'errMsg emailInvalid id should be a string', () => {
+        expect( errMsg.emailInvalid ).to.be.a( 'string' );
+      });
+
+      it( 'errMsg errorMsg id should be a string', () => {
+        expect( errMsg.errorMsg ).to.be.a( 'string' );
+      });
+
+      it( 'errMsg passwordTooShort id should be a string', () => {
+        expect( errMsg.passwordTooShort ).to.be.a( 'string' );
+      });
+
+      it( 'errMsg roleInvalid id should be a string', () => {
+        expect( errMsg.roleInvalid ).to.be.a( 'string' );
+      });
+
+      it( 'errMsg usernameTooShort id should be a string', () => {
+        expect( errMsg.usernameTooShort ).to.be.a( 'string' );
+      });
+
+      it( 'errMsg updateGenericFail id should be a string', () => {
+        expect( errMsg.updateGenericFail ).to.be.a( 'string' );
+      });
+      
+});
 
 let newAccount,
   newAccount2,
@@ -41,8 +109,17 @@ const username2 = 'testUser2';
 const password2 = 'A!3k90P2';
 const badUID = uuidv4();
 const badRole = 'MasterBlasterEatsMitosis';
-const badEmailMsg = 'Email is not valid.';
-const badUIDMsg = 'No Account found.';
+
+const testUserObj = {
+  "username": username,
+  "password": password,
+  "email": "bob@somesite.com",
+};
+const testUser2Obj = {
+  "username": username2,
+  "password":"8I3a9B!bc",
+  "email": "fred@somesite.com",
+};
 
 describe( 'Account Model Create a user account', () => {
 
@@ -119,11 +196,6 @@ describe( 'Account Model Create a user account', () => {
   }
 
   function initializeAccount( next ) {
-      const testUserObj = {
-          "username": username,
-          "password": password,
-          "email": "bob@somesite.com",
-      };
       accountModel.Create.account( testUserObj, ( goodResult ) => {
           newAccount = goodResult;
           next();
@@ -311,8 +383,8 @@ describe( 'Account Model Create a user account', () => {
     });
 
     // Return Value
-    it( 'newBadEmailAccount msg should have value of badEmailMsg', () => {
-      expect( newBadEmailAccount.msg ).to.equal( badEmailMsg );
+    it( 'newBadEmailAccount msg should have value of errMsg.emailInvalid', () => {
+      expect( newBadEmailAccount.msg ).to.equal( errMsg.emailInvalid );
     });
     
     it( 'newBadEmailAccount should have result of false', () => {
@@ -328,11 +400,6 @@ describe( 'Account Model Create a duplicate username in account', () => {
   let newBadDuplicateNameAccount;
 
   function attemptDuplicateUsername( next ) {
-    const testUserObj = {
-      "username": username,
-      "password":"8I3a9B!bc",
-      "email": "fred@somesite.com",
-    };
     accountModel.Create.account(testUserObj, ( result ) => {
       newBadDuplicateNameAccount = result;
       next();
@@ -745,8 +812,8 @@ describe( 'Account Model Read accountById', () => {
     });
 
     // Return Value
-    it( 'readBadUIDAccountResult msg should have value of var badUIDMsg: ' + badUIDMsg , () => {
-        expect( readBadUIDAccountResult.msg ).to.equal( badUIDMsg );
+    it( 'readBadUIDAccountResult msg should have value of var errMsg.accountNotFound', () => {
+        expect( readBadUIDAccountResult.msg ).to.equal( errMsg.accountNotFound );
     });
 
     it( 'readBadUIDAccountResult result should have value of false', () => {
@@ -802,13 +869,13 @@ describe( 'Account Model Read Validate Credentials', () => {
   const validationErrMsg = 'Account validation failed.';
   const fauxIPS = { "ip": "10.0.0.0", "fwdIP": "5.0.0.0" };
 
-  function attemptBadUsernameLogin( next ) {
-    const testUserObj = {
-        "username": "babBadLeroyBrown",
+  function attemptBadUidLogin( next ) {
+    const validationObj = {
+        "uid": badUID,
         "password": "85Ie!ki49p",
         "ips": fauxIPS,
     };
-    accountModel.Read.validateAccount( testUserObj, ( result ) => {
+    accountModel.Read.validateAccount( validationObj, ( result ) => {
       badUsernameLoginResult = result;
       next();
     });
@@ -816,7 +883,7 @@ describe( 'Account Model Read Validate Credentials', () => {
 
   function attemptBadPasswordLogin( next ) {
     const testUserObj = {
-        "username": username,
+        "uid": testAccountUID,
         "password": "2M@55iP931p",
         "ips": fauxIPS,
     };
@@ -828,7 +895,7 @@ describe( 'Account Model Read Validate Credentials', () => {
 
   function attemptGoodLogin( next ) {
     const testUserObj = {
-      "username": username,
+      "uid": testAccountUID,
       "password": password,
       "ips": fauxIPS,
     };
@@ -840,7 +907,7 @@ describe( 'Account Model Read Validate Credentials', () => {
   }
 
   before( ( done ) => {
-    attemptBadUsernameLogin( () => {
+    attemptBadUidLogin( () => {
       attemptBadPasswordLogin( () => {
         attemptGoodLogin( done );
       });
@@ -851,7 +918,7 @@ describe( 'Account Model Read Validate Credentials', () => {
     done();
   });
 
-  describe( 'Test Bad Username', () => {
+  describe( 'Test Bad uid', () => {
     // Property Existence -- ( badUsernameLoginResult )
     it( 'badUsernameLoginResult should NOT have property data', () => {
       expect( badUsernameLoginResult ).to.not.have.property( 'data' );
@@ -883,8 +950,8 @@ describe( 'Account Model Read Validate Credentials', () => {
       expect( badUsernameLoginResult.result ).to.equal( false );
     });
 
-    it( 'badUsernameLoginResult msg should have value of var validationErrMsg: ' + validationErrMsg, () => {
-      expect( badUsernameLoginResult.msg ).to.equal( validationErrMsg );
+    it( 'badUsernameLoginResult msg should have value of errMsg.accountNotFound', () => {
+      expect( badUsernameLoginResult.msg ).to.equal( errMsg.accountNotFound );
     });
 
   });
@@ -1487,8 +1554,8 @@ describe( 'Account Model Read isInRole', () => {
     });
 
     // Return Value
-    it( 'bad_isInRoleResult msg should have value var bad_isInRoleMSG', () => {
-      expect( bad_isInRoleResult.msg ).to.equal( bad_isInRoleMSG );
+    it( 'bad_isInRoleResult msg should have value var errMsg.accountNotFound', () => {
+      expect( bad_isInRoleResult.msg ).to.equal( errMsg.accountNotFound );
     });
 
     it( 'bad_isInRoleResult result should have value of false', () => {
@@ -1541,7 +1608,11 @@ describe( 'Account Model Read isInRole', () => {
     });
 
     // Return Value
-     it( 'empty_badRole_isInRoleResult result should have value of false', () => {
+     it( 'empty_badRole_isInRoleResult msg should have value of errMsg.roleInvalid', () => {
+      expect( empty_badRole_isInRoleResult.msg ).to.equal( errMsg.roleInvalid );
+    });
+
+    it( 'empty_badRole_isInRoleResult result should have value of false', () => {
       expect( empty_badRole_isInRoleResult.result ).to.equal( false );
     });
 
@@ -1651,8 +1722,8 @@ describe('Update email', () => {
     });
 
     // Return Value
-    it( 'update_bad_email_Result msg should have value of badEmailMsg', () => {
-      expect( update_bad_email_Result.msg ).to.equal( badEmailMsg );
+    it( 'update_bad_email_Result msg should have value of errMsg.emailInvalid', () => {
+      expect( update_bad_email_Result.msg ).to.equal( errMsg.emailInvalid );
     });
 
     it( 'update_bad_email_Result result should have value of false', () => {
@@ -1708,37 +1779,124 @@ describe('Update email', () => {
     });
 
     // Return Value
-    it( 'update_badUid_email_Result msg should have value of badUIDMsg', () => {
-      expect( update_badUid_email_Result.msg ).to.equal( badUIDMsg );
+    it( 'update_badUid_email_Result msg should have value of errMsg.accountNotFound', () => {
+      expect( update_badUid_email_Result.msg ).to.equal( errMsg.accountNotFound );
     });
 
     it( 'update_badUid_email_Result result should have value of false', () => {
       expect( update_badUid_email_Result.result ).to.equal( false );
     });
+
   });
 
 });
 
 describe('Update password', () => {
 
-  describe( 'Update using good password', () => {
+  describe( 'Update using a new password that is good', () => {
+
+    let goodPasswordResult;
+
+    const goodPassword = 'nm%o&z8Afy*m';
+
+    function updateAccountPassword( next ) {
+      accountModel.Update.password( testAccountUID, password, goodPassword, ( result ) => {
+        goodPasswordResult = result;
+        if( result.msg ) console.log( result.msg );
+        next();
+      });
+    }
+
+    before( ( done ) => {
+      updateAccountPassword( done );
+    });
+
+    after( done => done() );
 
     // Property Exists
-  
+    it( 'goodPasswordResult should NOT have property error', () => {
+      expect( goodPasswordResult ).to.not.have.property( 'error' );
+    });
+
+    it( 'goodPasswordResult should NOT have property msg', () => {
+      expect( goodPasswordResult ).to.not.have.property( 'msg' );
+    });
+
+    it( 'goodPasswordResult should have property result', () => {
+      expect( goodPasswordResult ).to.have.property( 'result' );
+    });
+
     // Property Type
-  
+    it( 'goodPasswordResult should be an Object', () => {
+      expect( goodPasswordResult ).to.be.a( 'Object' );
+    });
+
+    it( 'goodPasswordResult result should be a boolean', () => {
+      expect( goodPasswordResult.result ).to.be.a( 'boolean' );
+    });
+
     // Return Value
+     it( 'goodPasswordResult result should have value of true', () => {
+      expect( goodPasswordResult.result ).to.equal( true );
+    });
+    
   
   });
 
-  describe( 'Update using bad password', () => {
+  describe( 'Update using a new password that is too short', () => {
+
+    let badPasswordResult;
+
+    const badPassword = 'nm%o&z';
+
+    function updateAccount( next ) {
+      accountModel.Update.password( testAccount2UID, password2, badPassword, ( result ) => {
+        badPasswordResult = result;
+        next();
+      });
+    }
+
+    before( ( done ) => {
+      updateAccount( done );
+    });
+
+    after( done => done() );
 
     // Property Exists
-  
+    it( 'badPasswordResult should NOT have property error', () => {
+      expect( badPasswordResult ).to.not.have.property( 'error' );
+    });
+
+    it( 'badPasswordResult should have property msg', () => {
+      expect( badPasswordResult ).to.have.property( 'msg' );
+    });
+
+    it( 'badPasswordResult should have property result', () => {
+      expect( badPasswordResult ).to.have.property( 'result' );
+    });
+
     // Property Type
-  
+    it( 'badPasswordResult should be an Object', () => {
+      expect( badPasswordResult ).to.be.a( 'Object' );
+    });
+
+    it( 'badPasswordResult msg should be a string', () => {
+      expect( badPasswordResult.msg ).to.be.a( 'string' );
+    });
+
+    it( 'badPasswordResult result should be a boolean', () => {
+      expect( badPasswordResult.result ).to.be.a( 'boolean' );
+    });
+
     // Return Value
-  
+    it( 'badPasswordResult msg should have value of errMsg.passwordTooShort', () => {
+      expect( badPasswordResult.msg ).to.equal( errMsg.passwordTooShort );
+    });
+
+    it( 'badPasswordResult result should have value of false', () => {
+      expect( badPasswordResult.result ).to.equal( false );
+    });
+    
   });
 
 });
