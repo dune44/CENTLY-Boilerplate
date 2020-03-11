@@ -47,7 +47,7 @@ const accountSchema = {
     secret: {
         type: String
     },
-    qruri:{
+    qrUri:{
         type: String
     },
     roles: {

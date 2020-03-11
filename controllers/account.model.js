@@ -17,6 +17,10 @@ const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
 //const collection = db.collection(process.env.BUCKET);
 // console.log(N1qlQuery);
 
+// TODO: Add password 
+// TODO: Two step and add secret for recovery.
+// TODO: ADD Regex to validatePassword 
+
 const accountModel = {
     Create: {
         account: ( account, next ) => {
@@ -114,6 +118,7 @@ const accountModel = {
               }
           });
         },
+        generateSecret: ( ) => speakeasy.generateSecret(),
         rolesById: ( uid, next)  => {
             const q = N1qlQuery.fromString('SELECT _id, `roles` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '" ');
             db.query(q, (e, r) => {
@@ -286,10 +291,24 @@ const accountModel = {
                 next({ "msg": errMsg.roleInvalid, "result": false });
             }
         },
-        twoStep: ( next ) => {
-
-            next();
-
+        twoStep: ( uid, token, twoA, next ) => {
+            accountMethod.getUserById( uid, ( account ) => {
+                if( account.enable2a != twoA ) {
+                    if( account.enable2a ) {
+                        accountMethod.validate2a( account.secret, token, ( validated ) => {
+                            if( validated ) {
+                                accountMethod.update2a( uid, twoA, ( resultObj ) => {
+                                    next( resultObj );
+                                });
+                            } else {
+                                next({ "msg": '', "result": false});
+                            }
+                        });
+                    }else{
+                        next();
+                    }
+                }
+            });
         }
     },
     Delete: {
@@ -316,7 +335,7 @@ const accountMethod = {
         return ( nameList.indexOf( username ) > -1 );
     },
     getUserById: ( uid, next ) => {
-        const q = N1qlQuery.fromString('SELECT ' + fields + ', `password` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '"');
+        const q = N1qlQuery.fromString('SELECT ' + fields + ', `password`, `secret` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '"');
         db.query(q, function(e, r) {
             if(e){
                 console.log('error in accountMethod.getUserById');
@@ -382,6 +401,21 @@ const accountMethod = {
     roleExists: ( role ) => {
         return roles.includes(role);
     },
+    update2a: ( uid, twoA, next ) => {
+        let q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET + '` SET `enable2a` = ' + twoA + ' WHERE _type == "account" AND _id == "' + uid + '" ');
+        db.query(q, function(e, r, m) {
+            if(e){
+                console.log('error in accountModel.accountMethod update2a.');
+                console.log(e);
+                next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+            }else{
+                if( m.status === 'success' && m.metrics.mutationCount === 1 )
+                    next({ "result": true });
+                else
+                    next({ "msg": 'Not a successful update.', "result": false });
+            }
+        });
+    },
     updateToken: ( validationObj, next ) => {
         const token = jwt.sign({ _id: validationObj.uid }, process.env.JWT_SECRET, { expiresIn: '7 days' } );
 
@@ -397,6 +431,14 @@ const accountMethod = {
 
         // collection.Update({_id: account._id},account);
         next( tokens );
+    },
+    validate2a: ( secret, token, next ) => {
+        const result = speakeasy.totp.verify({
+            "secret": secret,
+            "encoding": 'base32',
+            "token": token
+        });
+        next( result );
     },
     validateEmail: ( email ) => validator.isEmail( email ),
     validatePassword: ( password ) => {

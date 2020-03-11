@@ -1620,7 +1620,7 @@ describe( 'Account Model Read isInRole', () => {
 
 });
 
-describe('Update email', () => {
+describe( 'Update email', () => {
 
   describe( 'Update with a good email', () => {
     let update_email_Result;
@@ -1791,7 +1791,7 @@ describe('Update email', () => {
 
 });
 
-describe('Update password', () => {
+describe( 'Update password', () => {
 
   describe( 'Update using a new password that is good', () => {
 
@@ -1899,6 +1899,55 @@ describe('Update password', () => {
     
   });
 
+});
+
+describe( 'generate a secret for 2a', () => {
+
+  let generatedSecret;
+
+  function getSecret( next ) {
+    generatedSecret = accountModel.Read.generateSecret();
+    next();
+  }
+
+  before( ( done ) => getSecret( done ) );
+
+  after( done => done() );
+
+  // Property Exists
+  it( 'generatedSecret should have property ascii', () => {
+    expect( generatedSecret ).to.have.property( 'ascii' );
+  });
+
+  it( 'generatedSecret should have property hex', () => {
+    expect( generatedSecret ).to.have.property( 'hex' );
+  });
+
+  it( 'generatedSecret should have property base32', () => {
+    expect( generatedSecret ).to.have.property( 'base32' );
+  });
+
+  it( 'generatedSecret should have property otpauth_url', () => {
+    expect( generatedSecret ).to.have.property( 'otpauth_url' );
+  });
+
+  // Property Type
+  it( 'generatedSecret ascii should be an string', () => {
+    expect( generatedSecret.ascii ).to.be.a( 'string' );
+  });
+
+  it( 'generatedSecret hex should be an string', () => {
+    expect( generatedSecret.hex ).to.be.a( 'string' );
+  });
+
+  it( 'generatedSecret base32 should be an string', () => {
+    expect( generatedSecret.base32 ).to.be.a( 'string' );
+  });
+
+  it( 'generatedSecret otpauth_url should be an string', () => {
+    expect( generatedSecret.otpauth_url ).to.be.a( 'string' );
+  });
+    
 });
 
 describe('Update twoStep', () => {
