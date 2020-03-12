@@ -17,7 +17,6 @@ const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
 //const collection = db.collection(process.env.BUCKET);
 // console.log(N1qlQuery);
 
-// TODO: Add password 
 // TODO: Two step and add secret for recovery.
 // TODO: ADD Regex to validatePassword 
 
@@ -243,7 +242,7 @@ const accountModel = {
                                                 if( m.status == 'success' && m.metrics.mutationCount == 1 )
                                                     next({ "result": true });
                                                 else
-                                                    next({ "msg": 'Not a successful update.', "result": false });
+                                                    next({ "msg": errMsg.updateGenericFail, "result": false });
                                             }
                                         });
                                     } else {
