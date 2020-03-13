@@ -1950,12 +1950,65 @@ describe( 'generate a secret for 2a', () => {
     
 });
 
+describe( 'Get the recovery phrase.', () => {
+
+  let recoveryPhrase;
+
+  function getRecoveryPhrase( next ) {
+
+      next();
+
+  }
+
+  before( ( done ) => {
+    done();
+  });
+
+  after( done => done() );
+
+  // Property Type
+  it( 'secretResult6Word should be a string', () => {
+    expect( secretResult6Word ).to.be.a( 'string' );
+  });
+
+  // Return Value
+  it( 'secretResult6Word should have 6 words.', () => {
+    const wordCount = secretResult6Word.split(' ');
+    expect( wordCount.length ).to.equal( 6 );
+  });
+
+});
+
 describe('Update twoStep', () => {
 
-  describe( '', () => {
+  describe( 'Set twoA on with good id', () => {
+
+    let twoAGoodIdResult;
+
+    function updateTwoA( next ) {
+
+      next();
+    }
+
+    before( ( done ) => {
+      updateTwoA( done );
+    });
+
+    after( done => done() );
 
     // Property Exists
-  
+    it( 'twoAGoodIdResult should NOT have property error', () => {
+      expect( twoAGoodIdResult ).to.not.have.property( 'error' );
+    });
+
+    it( 'twoAGoodIdResult should have property result', () => {
+      expect( twoAGoodIdResult ).to.have.property( 'result' );
+    });
+
+    it( 'twoAGoodIdResult should have property recoveryPhrase', () => {
+      expect( twoAGoodIdResult ).to.have.property( 'recoveryPhrase' );
+    });
+
     // Property Type
   
     // Return Value

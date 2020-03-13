@@ -66,6 +66,9 @@ const accountSchema = {
     },
     date: {
         type: Object
+    },
+    recoveryPhrase: {
+        type: String
     }
 };
 
