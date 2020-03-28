@@ -1954,7 +1954,7 @@ describe( 'Get the recovery phrase.', () => {
 
   let recoveryPhrase;
 
-  function getRecoveryPhrase( next ) {
+  function getRecoveryPhrase( testAccountUID, next ) {
 
       next();
 

@@ -34,8 +34,11 @@
   "dependencies": {
     "bcryptjs": "2.4.3",
     "body-parser": "1.19.0",
-    "couchbase": "^2.6.10",
+    "cookie-parser": "^1.4.5",
+    "couchbase": "^2.6.11",
     "express": "4.17.1",
+    "express-rate-limit": "^5.1.1",
+    "helmet": "^3.22.0",
     "jsonwebtoken": "8.5.1",
     "moment": "2.24.0",
     "moment-json-parser": "^0.9.1",
@@ -43,7 +46,7 @@
     "qrcode": "1.4.4",
     "speakeasy": "2.0.0",
     "uuid": "7.0.2",
-    "validator": "12.2.0",
+    "validator": "13.0.0",
     "wrap-sync": "1.0.0"
   },
   "devDependencies": {
@@ -51,7 +54,7 @@
     "dirty-chai": "^2.0.1",
     "env-cmd": "10.1.0",
     "istanbul": "^0.4.5",
-    "mocha": "7.1.0",
+    "mocha": "7.1.1",
     "supertest": "4.0.2"
   }
 }

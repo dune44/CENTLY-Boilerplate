@@ -18,7 +18,7 @@ const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
 // console.log(N1qlQuery);
 
 // TODO: Two step and add secret for recovery.
-// TODO: ADD Regex to validatePassword 
+// TODO: ADD Regex to validatePassword
 
 const accountModel = {
     Create: {
@@ -62,7 +62,8 @@ const accountModel = {
     },
     Read: {
         accountById: ( uid, next ) => {
-            const q = N1qlQuery.fromString('SELECT ' +  fields + ' FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '" ');
+            const q = N1qlQuery.fromString('SELECT ' +  fields + ' FROM `' + process.env.BUCKET +
+            '` WHERE _type == "account" AND _id == "' + uid + '" ');
             db.query(q, (e, r) => {
                 if(e){
                     console.log('error in accountModel.Read.accountById');
@@ -80,7 +81,8 @@ const accountModel = {
             });
         },
         accountByUsername: ( username, next ) => {
-            const q = N1qlQuery.fromString('SELECT '+fields+' FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND `username` == "' + username + '"');
+            const q = N1qlQuery.fromString('SELECT '+fields+' FROM `' + process.env.BUCKET +
+            '` WHERE _type == "account" AND `username` == "' + username + '"');
             db.query(q, function(e, r) {
                 if(e){
                     console.log('error in accountModel.Read.accountByUsername');
@@ -101,7 +103,8 @@ const accountModel = {
             });
         },
         all: ( next ) => {
-          const q = N1qlQuery.fromString('SELECT '+fields+' FROM `'+process.env.BUCKET+'` WHERE _type == "account" ');
+          const q = N1qlQuery.fromString('SELECT '+fields+' FROM `' + process.env.BUCKET +
+          '` WHERE _type == "account" ');
           db.query(q, function(e, r) {
               if(e){
                   console.log('error in accountModel.Read.all');
@@ -119,7 +122,8 @@ const accountModel = {
         },
         generateSecret: ( ) => speakeasy.generateSecret(),
         rolesById: ( uid, next)  => {
-            const q = N1qlQuery.fromString('SELECT _id, `roles` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '" ');
+            const q = N1qlQuery.fromString('SELECT _id, `roles` FROM `' + process.env.BUCKET +
+            '` WHERE _type == "account" AND _id == "' + uid + '" ');
             db.query(q, (e, r) => {
                 if(e){
                     console.log('error in accountModel.Read.accountById');
@@ -139,7 +143,8 @@ const accountModel = {
         },
         isInRole: ( uid, role, next ) => {
             if( accountMethod.roleExists( role ) ) {
-                const q = N1qlQuery.fromString('SELECT `roles` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '" ');
+                const q = N1qlQuery.fromString('SELECT `roles` FROM `' + process.env.BUCKET +
+                '` WHERE _type == "account" AND _id == "' + uid + '" ');
                 db.query(q, (e, r) => {
                     if(e){
                         console.log('error in accountModel.Read.accountById');
@@ -161,13 +166,33 @@ const accountModel = {
                 next({ "msg": errMsg.roleInvalid, "result": false });
             }
         },
+        recoveryPhrase: ( uid, next ) => {
+            const q = N1qlQuery.fromString('SELECT `recoveryPhrase` FROM `' + process.env.BUCKET +
+            '` WHERE _type == "account" AND _id == "' + uid + '" ');
+            db.query(q, (e, r) => {
+                if(e){
+                    console.log('error in accountModel.Read.accountById');
+                    console.log(e);
+                    next({ "msg": e, "result": false});
+                }else{
+                    if( r.length === 1 ) {
+                        next({ "data": r[0], "result": true });
+                    } else if( r.length === 0 ) {
+                        next({ "msg": errMsg.accountNotFound, "result": false });
+                    } else {
+                        next({ "msg": 'Unexpected result', "result": false });
+                    }
+                }
+            });
+        },
         validateAccount: ( validationObj, next ) => {
             accountMethod.getUserById( validationObj.uid, ( account ) => {
                 if( account.result ) {
-                    accountMethod.passwordCompare( validationObj.password, account.data.password, ( result ) => {
+                    accountMethod.passwordCompare( validationObj.password, account.data.password,
+                      ( result ) => {
                         if( result ){
-                          accountMethod.updateToken( validationObj, ( tokens ) => {
-                            next({ "result": result, "token": tokens.token });
+                          accountMethod.updateToken( validationObj, ( token ) => {
+                            next({ "result": result, "token": token });
                           });
                         } else {
                           next({ "msg": errMsg.accountValidationFailure, "result": false });
@@ -176,7 +201,7 @@ const accountModel = {
                 } else {
                     next( account );
                 }
-            });  
+            });
         },
         verifyToken: ( token, next ) => {
           jwt.verify(token, process.env.JWT_SECRET, ( e, decoded ) => {
@@ -201,7 +226,9 @@ const accountModel = {
                 if( !accountMethod.validateEmail( email ) ) {
                     next({ "msg": errMsg.emailInvalid, "result": false });
                 } else {
-                    const q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET + '` SET email = "' + email + '" WHERE _type == "account" AND _id == "' + uid + '" ');
+                    const q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
+                    '` SET email = "' + email + '" WHERE _type == "account" AND _id == "' +
+                    uid + '" ');
                     db.query(q, function(e, r, m) {
                         if(e){
                             console.log('error in accountModel.Update.email');
@@ -268,7 +295,9 @@ const accountModel = {
                         if( acct.data.roles ) acct.data.roles.push(role);
                         else acct.data.roles = [ role ];
 
-                        const q = N1qlQuery.fromString('UPDATE `'+process.env.BUCKET+'` SET roles = ' + JSON.stringify( acct.data.roles ) + ' WHERE _type == "account" AND _id == "' + uid + '" ');
+                        const q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
+                        '` SET roles = ' + JSON.stringify( acct.data.roles ) +
+                        ' WHERE _type == "account" AND _id == "' + uid + '" ');
                         db.query(q, function(e, r, m) {
                             if(e){
                                 console.log('error in accountModel.Update.role');
@@ -320,6 +349,44 @@ const accountModel = {
 };
 // Non Public Methods
 const accountMethod = {
+    createRecoveryPhrase: ( uid ) => {
+        const q = N1qlQuery.fromString('SELECT ' +  fields + ', `recoveryPhrase` FROM `' +
+        process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '" ');
+        db.query(q, (e, r) => {
+            if(e){
+                console.log('Error in accountMethod.createRecoveryPhrase read phrase.');
+                console.log(e);
+                next( false );
+            }else{
+                if( r.length === 1 && !isVal( r[0].recoveryPhrase ) ) {
+                    next( r[0].recoveryPhrase );
+                } else if( r.length === 0 ) {
+                    const secretPhraseGenerator = require('./../lib/secretPhraseGenerator/index');
+                    secretPhraseGenerator( 6, (secretPhrase ) => {
+                        let q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
+                        '` SET `recoveryPhrase` = $1 WHERE _type == "account" AND _id == "' +
+                        uid + '" ');
+                        db.query(q, [secretPhrase], function(e, r, m) {
+                            if(e){
+                                console.log('error in accountModel.Update.password');
+                                console.log(e);
+                                next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+                            }else{
+                                if( m.status == 'success' && m.metrics.mutationCount == 1 )
+                                    next({ "result": true });
+                                else
+                                    next({ "msg": errMsg.updateGenericFail, "result": false });
+                            }
+                        });
+                    });
+                } else if( isVal( r[0].recoveryPhrase ) ) {
+                    next({ "result": true });
+                } else {
+                    next( false );
+                }
+            }
+        });
+    },
     duplicateName: ( username, next ) => {
       accountModel.Read.accountByUsername( username, ( r ) => {
         next( r.result );
@@ -334,7 +401,8 @@ const accountMethod = {
         return ( nameList.indexOf( username ) > -1 );
     },
     getUserById: ( uid, next ) => {
-        const q = N1qlQuery.fromString('SELECT ' + fields + ', `password`, `secret` FROM `'+process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '"');
+        const q = N1qlQuery.fromString('SELECT ' + fields + ', `password`, `secret` FROM `' +
+        process.env.BUCKET + '` WHERE _type == "account" AND _id == "' + uid + '"');
         db.query(q, function(e, r) {
             if(e){
                 console.log('error in accountMethod.getUserById');
@@ -366,6 +434,9 @@ const accountMethod = {
                 });
             }
         });
+    },
+    isVal: ( value ) => {
+        return ( value && value !== null && value !== '' );
     },
     passwordCompare: ( pwd, hash, done ) => {
       bcrypt.compare( pwd, hash, function( e, r ) {
@@ -401,7 +472,8 @@ const accountMethod = {
         return roles.includes(role);
     },
     update2a: ( uid, twoA, next ) => {
-        let q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET + '` SET `enable2a` = ' + twoA + ' WHERE _type == "account" AND _id == "' + uid + '" ');
+        let q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET + '` SET `enable2a` = ' +
+        twoA + ' WHERE _type == "account" AND _id == "' + uid + '" ');
         db.query(q, function(e, r, m) {
             if(e){
                 console.log('error in accountModel.accountMethod update2a.');
@@ -416,20 +488,14 @@ const accountMethod = {
         });
     },
     updateToken: ( validationObj, next ) => {
-        const token = jwt.sign({ _id: validationObj.uid }, process.env.JWT_SECRET, { expiresIn: '7 days' } );
-
-        // add token to account with their current ip.
-        // add a forwarded IP to check if user has a proxy.
-        let tokens = {
-          token: token,
-            ips: {
-              ip: validationObj.ips.ip,
-              fwdIP: validationObj.ips.fwdIP
-            }
+        const ips = {
+          ip: validationObj.ips.ip,
+          fwdIP: validationObj.ips.fwdIP
         };
-
-        // collection.Update({_id: account._id},account);
-        next( tokens );
+        const token = jwt.sign({ _id: validationObj.uid, ips }, process.env.JWT_SECRET,
+          { expiresIn: '7 days' } );
+        // Pass back token to be stored by user.
+        next( token );
     },
     validate2a: ( secret, token, next ) => {
         const result = speakeasy.totp.verify({
