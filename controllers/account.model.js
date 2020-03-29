@@ -121,6 +121,10 @@ const accountModel = {
           });
         },
         generateSecret: ( ) => speakeasy.generateSecret(),
+        passphrase: ( next ) => {
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`!@#$%^&*-_.';
+
+        },
         rolesById: ( uid, next)  => {
             const q = N1qlQuery.fromString('SELECT _id, `roles` FROM `' + process.env.BUCKET +
             '` WHERE _type == "account" AND _id == "' + uid + '" ');
@@ -203,6 +207,9 @@ const accountModel = {
                 }
             });
         },
+        verifyPassphrase: ( uid, phrase, next ) => {
+
+        },
         verifyToken: ( token, next ) => {
           jwt.verify(token, process.env.JWT_SECRET, ( e, decoded ) => {
             if( e ) {
@@ -250,6 +257,9 @@ const accountModel = {
             } else {
                 next({ "msg": 'Email cannot be blank', "result": false});
             }
+        },
+        passphrase: ( uid, phrase, next ) => {
+
         },
         password: ( uid, oldPassword, newPassword, next ) => {
             if( accountMethod.validatePassword( newPassword ) ) {
