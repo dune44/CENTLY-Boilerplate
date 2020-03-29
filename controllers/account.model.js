@@ -120,7 +120,7 @@ const accountModel = {
               }
           });
         },
-        generateSecret: ( ) => speakeasy.generateSecret(),
+        generateQRcode: ( ) => speakeasy.generateSecret(),
         passphrase: ( next ) => {
           const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`!@#$%^&*-_.';
 
@@ -259,7 +259,24 @@ const accountModel = {
             }
         },
         passphrase: ( uid, phrase, next ) => {
+          accountMethod.ink( phrase, ( hash, inkMsg ) => {
 
+          });
+          let q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
+          '` SET `recoveryPhrase` = $1 WHERE _type == "account" AND _id == "' +
+          uid + '" ');
+          db.query(q, [secretPhrase], function(e, r, m) {
+              if(e){
+                  console.log('error in accountModel.Update.password');
+                  console.log(e);
+                  next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+              }else{
+                  if( m.status == 'success' && m.metrics.mutationCount == 1 )
+                      next({ "result": true });
+                  else
+                      next({ "msg": errMsg.updateGenericFail, "result": false });
+              }
+          });
         },
         password: ( uid, oldPassword, newPassword, next ) => {
             if( accountMethod.validatePassword( newPassword ) ) {
@@ -359,44 +376,6 @@ const accountModel = {
 };
 // Non Public Methods
 const accountMethod = {
-    createRecoveryPhrase: ( uid ) => {
-        const q = N1qlQuery.fromString('SELECT ' +  fields + ', `recoveryPhrase` FROM `' +
-        process.env.BUCKET+'` WHERE _type == "account" AND _id == "' + uid + '" ');
-        db.query(q, (e, r) => {
-            if(e){
-                console.log('Error in accountMethod.createRecoveryPhrase read phrase.');
-                console.log(e);
-                next( false );
-            }else{
-                if( r.length === 1 && !isVal( r[0].recoveryPhrase ) ) {
-                    next( r[0].recoveryPhrase );
-                } else if( r.length === 0 ) {
-                    const secretPhraseGenerator = require('./../lib/secretPhraseGenerator/index');
-                    secretPhraseGenerator( 6, (secretPhrase ) => {
-                        let q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
-                        '` SET `recoveryPhrase` = $1 WHERE _type == "account" AND _id == "' +
-                        uid + '" ');
-                        db.query(q, [secretPhrase], function(e, r, m) {
-                            if(e){
-                                console.log('error in accountModel.Update.password');
-                                console.log(e);
-                                next({ "error": e, "msg": errMsg.errorMsg, "result": false });
-                            }else{
-                                if( m.status == 'success' && m.metrics.mutationCount == 1 )
-                                    next({ "result": true });
-                                else
-                                    next({ "msg": errMsg.updateGenericFail, "result": false });
-                            }
-                        });
-                    });
-                } else if( isVal( r[0].recoveryPhrase ) ) {
-                    next({ "result": true });
-                } else {
-                    next( false );
-                }
-            }
-        });
-    },
     duplicateName: ( username, next ) => {
       accountModel.Read.accountByUsername( username, ( r ) => {
         next( r.result );

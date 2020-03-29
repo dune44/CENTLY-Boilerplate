@@ -41,11 +41,11 @@ describe( 'Error msg sanity check.', () => {
       it( 'errMsg should have property emailInvalid', () => {
         expect( errMsg ).to.have.property( 'emailInvalid' );
       });
-      
+
       it( 'errMsg should have property errorMsg', () => {
         expect( errMsg ).to.have.property( 'errorMsg' );
       });
-      
+
       it( 'errMsg should have property passwordTooShort', () => {
         expect( errMsg ).to.have.property( 'passwordTooShort' );
       });
@@ -90,7 +90,7 @@ describe( 'Error msg sanity check.', () => {
       it( 'errMsg updateGenericFail id should be a string', () => {
         expect( errMsg.updateGenericFail ).to.be.a( 'string' );
       });
-      
+
 });
 
 let newAccount,
@@ -284,7 +284,7 @@ describe( 'Account Model Create a user account', () => {
     it( 'newAccount data should be an Object', () => {
       expect( newAccount.data ).to.be.a( 'Object' );
     });
-    
+
     it( 'newAccount data email should be a string', () => {
       expect( newAccount.data.email ).to.be.a( 'string' );
     });
@@ -386,7 +386,7 @@ describe( 'Account Model Create a user account', () => {
     it( 'newBadEmailAccount msg should have value of errMsg.emailInvalid', () => {
       expect( newBadEmailAccount.msg ).to.equal( errMsg.emailInvalid );
     });
-    
+
     it( 'newBadEmailAccount should have result of false', () => {
       expect( newBadEmailAccount.result ).to.equal( false );
     });
@@ -1105,11 +1105,11 @@ describe('Account Model Update role', () => {
         next();
       });
     }
-  
+
     before( ( done ) => {
       updateRole( done );
     });
-  
+
     after( done => done() );
 
     // Property Exists
@@ -1150,13 +1150,13 @@ describe('Account Model Update role', () => {
         update_BadRole_GoodUser_Result = result;
         next();
       });
-  
+
     }
-  
+
     before( ( done ) => {
       updateRole( done );
     });
-  
+
     after( done => done() );
 
     // Property Exists
@@ -1176,7 +1176,7 @@ describe('Account Model Update role', () => {
     it( 'update_BadRole_GoodUser_Result should be an Object', () => {
       expect( update_BadRole_GoodUser_Result ).to.be.a( 'Object' );
     });
-    
+
     it( 'update_BadRole_GoodUser_Result msg should be a string', () => {
       expect( update_BadRole_GoodUser_Result.msg ).to.be.a( 'string' );
     });
@@ -1193,7 +1193,7 @@ describe('Account Model Update role', () => {
     it( 'update_BadRole_GoodUser_Result result should have value of false', () => {
       expect( update_BadRole_GoodUser_Result.result ).to.equal( false );
     });
-  
+
   });
 
   describe( 'Add Good Role to Bad Account', () => {
@@ -1205,11 +1205,11 @@ describe('Account Model Update role', () => {
         next();
       });
     }
-  
+
     before( ( done ) => {
       updateRole( done );
     });
-  
+
     after( done => done() );
 
     // Property Exists
@@ -1229,7 +1229,7 @@ describe('Account Model Update role', () => {
     it( 'update_GoodRole_BadUser_Result should be an Object', () => {
       expect( update_GoodRole_BadUser_Result ).to.be.a( 'Object' );
     });
-    
+
     it( 'update_GoodRole_BadUser_Result msg should be a string', () => {
       expect( update_GoodRole_BadUser_Result.msg ).to.be.a( 'string' );
     });
@@ -1632,18 +1632,18 @@ describe( 'Update email', () => {
         if(result.msg){
           console.log( 'msg' );
           console.log( result.msg);
-        } 
+        }
         next();
       });
-  
+
     }
-  
+
     before( ( done ) => {
-  
+
       updateAccount( done );
-  
+
     });
-  
+
     after( done => done() );
 
     // Property Exists
@@ -1684,15 +1684,15 @@ describe( 'Update email', () => {
         update_bad_email_Result = result;
         next();
       });
-  
+
     }
-  
+
     before( ( done ) => {
-  
+
       updateAccount( done );
-  
+
     });
-  
+
     after( done => done() );
 
     // Property Exists
@@ -1741,15 +1741,15 @@ describe( 'Update email', () => {
         update_badUid_email_Result = result;
         next();
       });
-  
+
     }
-  
+
     before( ( done ) => {
-  
+
       updateAccount( done );
-  
+
     });
-  
+
     after( done => done() );
 
     // Property Exists
@@ -1839,8 +1839,8 @@ describe( 'Update password', () => {
      it( 'goodPasswordResult result should have value of true', () => {
       expect( goodPasswordResult.result ).to.equal( true );
     });
-    
-  
+
+
   });
 
   describe( 'Update using a new password that is too short', () => {
@@ -1896,17 +1896,19 @@ describe( 'Update password', () => {
     it( 'badPasswordResult result should have value of false', () => {
       expect( badPasswordResult.result ).to.equal( false );
     });
-    
+
   });
 
 });
 
-describe( 'generate a secret for 2a', () => {
+describe( 'generate a QRcode and secret for 2a', () => {
 
-  let generatedSecret;
+  let qrcodeResult;
 
   function getSecret( next ) {
-    generatedSecret = accountModel.Read.generateSecret();
+    generatedSecret = accountModel.Read.generateQRcode( ( result ) => {
+      qrcodeResult = result;
+    });
     next();
   }
 
@@ -1915,41 +1917,53 @@ describe( 'generate a secret for 2a', () => {
   after( done => done() );
 
   // Property Exists
-  it( 'generatedSecret should have property ascii', () => {
-    expect( generatedSecret ).to.have.property( 'ascii' );
+  it( 'qrcodeResult should have property secret', () => {
+    expect( qrcodeResult ).to.have.property( 'secret' );
   });
 
-  it( 'generatedSecret should have property hex', () => {
-    expect( generatedSecret ).to.have.property( 'hex' );
+  it( 'qrcodeResult should have property data_url', () => {
+    expect( qrcodeResult ).to.have.property( 'data_url' );
   });
 
-  it( 'generatedSecret should have property base32', () => {
-    expect( generatedSecret ).to.have.property( 'base32' );
+  it( 'qrcodeResult.secret should have property ascii', () => {
+    expect( qrcodeResult.secret ).to.have.property( 'ascii' );
   });
 
-  it( 'generatedSecret should have property otpauth_url', () => {
-    expect( generatedSecret ).to.have.property( 'otpauth_url' );
+  it( 'qrcodeResult.secret should have property hex', () => {
+    expect( qrcodeResult.secret ).to.have.property( 'hex' );
+  });
+
+  it( 'qrcodeResult.secret should have property base32', () => {
+    expect( qrcodeResult.secret ).to.have.property( 'base32' );
+  });
+
+  it( 'qrcodeResult.secret should have property otpauth_url', () => {
+    expect( qrcodeResult.secret ).to.have.property( 'otpauth_url' );
   });
 
   // Property Type
-  it( 'generatedSecret ascii should be an string', () => {
-    expect( generatedSecret.ascii ).to.be.a( 'string' );
+  it( 'qrcodeResult.secret should be an object', () => {
+    expect( qrcodeResult.secret ).to.be.a( 'object' );
   });
 
-  it( 'generatedSecret hex should be an string', () => {
-    expect( generatedSecret.hex ).to.be.a( 'string' );
+  it( 'qrcodeResult.secret.ascii should be a string', () => {
+    expect( qrcodeResult.secret.ascii ).to.be.a( 'string' );
   });
 
-  it( 'generatedSecret base32 should be an string', () => {
-    expect( generatedSecret.base32 ).to.be.a( 'string' );
+  it( 'qrcodeResult.secret.hex should be a string', () => {
+    expect( qrcodeResult.secret.hex ).to.be.a( 'string' );
   });
 
-  it( 'generatedSecret otpauth_url should be an string', () => {
-    expect( generatedSecret.otpauth_url ).to.be.a( 'string' );
+  it( 'qrcodeResult.secret.base32 should be a string', () => {
+    expect( qrcodeResult.secret.base32 ).to.be.a( 'string' );
   });
-    
+
+  it( 'qrcodeResult.secret.otpauth_url should be a string', () => {
+    expect( qrcodeResult.secret.otpauth_url ).to.be.a( 'string' );
+  });
+
 });
-
+/*
 describe( 'Get the recovery phrase.', () => {
 
   let recoveryPhrase;
@@ -2010,9 +2024,9 @@ describe('Update twoStep', () => {
     });
 
     // Property Type
-  
+
     // Return Value
-  
+
   });
 
 });
@@ -2022,11 +2036,12 @@ describe('Delete account', () => {
   describe( '', () => {
 
     // Property Exists
-  
+
     // Property Type
-  
+
     // Return Value
-  
+
   });
 
 });
+*/
