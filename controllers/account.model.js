@@ -1,17 +1,17 @@
 //const accountSchema = require('./../schema/account.schema');
-const bcrypt = require('bcryptjs');
-const couchbase = require('couchbase');
-const db = require('./db');
-const jwt = require('jsonwebtoken');
-const moment = require('moment');
+const bcrypt = require( 'bcryptjs' );
+const couchbase = require( 'couchbase' );
+const db = require( './db' );
+const jwt = require( 'jsonwebtoken' );
+const moment = require( 'moment' );
 const N1qlQuery = couchbase.N1qlQuery;
-const speakeasy = require('speakeasy');
-const QRCode = require('qrcode');
-const roles = require('./../config/roles');
-const { v4: uuidv4 } = require('uuid');
-const validator = require('validator');
+const speakeasy = require( 'speakeasy' );
+const QRCode = require( 'qrcode' );
+const roles = require( './../config/roles' );
+const { v4: uuidv4 } = require( 'uuid' );
+const validator = require( 'validator' );
 
-const errMsg = require('./account.errMsg');
+const errMsg = require( './account.errMsg' );
 const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
 // Test to make sure newer couchbase have flushed api.
 //const collection = db.collection(process.env.BUCKET);
@@ -209,38 +209,38 @@ const accountModel = {
             });
         },
         validateAccount: ( uid, password, ips, twoAtoken, next ) => {
-            accountMethod.getUserById( uid, ( account ) => {
-                if( account.result ) {
-                    if( account.data.twoA ) {
-                        const twoAResult = validate2a( account.data.secret, twoAtoken );
-                        if( !twoAResult ) {
-                            next({ "msg": errMsg.accountValidationFailure, "result": false });
-                            return;
-                        }
-                    }
-                    accountMethod.passwordCompare( password, account.data.password,
-                      ( result ) => {
-                        if( result ){
-                          accountMethod.updateToken( uid, ips, ( token ) => {
-                            next({ "result": result, "token": token });
-                          });
-                        } else {
-                          next({ "msg": errMsg.accountValidationFailure, "result": false });
-                        }
-                      });
-                } else {
-                    next( account );
-                }
-            });
+          accountMethod.getUserById( uid, ( account ) => {
+            if( account.result ) {
+              const twoAResult = ( account.data.enable2a ) ? accountMethod.validate2a( account.data.secret, twoAtoken ) : true;
+              if( twoAResult ) {
+                accountMethod.passwordCompare( password, account.data.password, ( result ) => {
+                  if( result ){
+                    accountMethod.updateToken( uid, ips, ( token ) => {
+                      next({ "result": result, "token": token });
+                    });
+                  } else {
+                    next({ "msg": errMsg.accountValidationFailure, "result": false });
+                  }
+                });
+              } else {
+                console.log( 'enable2a ' + account.data.enable2a );
+                next({ "msg": errMsg.accountValidationFailure, "result": false });
+              }
+            } else {
+              next( account );
+            }
+          });
         },
         verifyPassphrase: ( uid, phrase, next ) => {
 
         },
         verifyToken: ( token, next ) => {
-          jwt.verify(token, process.env.JWT_SECRET, ( e, decoded ) => {
+          jwt.verify( token, process.env.JWT_SECRET, ( e, decoded ) => {
             if( e ) {
               console.log('error in accountModel.Read.verifyToken');
-              console.log(e);
+              console.log( e );
+              console.log( );
+              console.log( 'token passed: ' + token );
               next({ "error": e, "msg": 'An error occured', "result": false });
             } else if(moment().unix() > decoded.exp ){
               // time expired.
@@ -353,7 +353,7 @@ const accountModel = {
                                 accountMethod.ink( newPassword, ( hash, inkMsg) => {
                                     if( hash ) {
                                         let q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET + '` SET `password` = $1 WHERE _type == "account" AND _id == "' + uid + '" ');
-                                        db.query(q, ['hash'], function(e, r, m) {
+                                        db.query(q, [hash], function(e, r, m) {
                                             if(e){
                                                 console.log('error in accountModel.Update.password');
                                                 console.log(e);
@@ -432,7 +432,7 @@ const accountModel = {
                           });
                         }
                       } else {
-        
+
                         next({ "msg": errMsg.recoveryPhraseNotProved, "result": false });
                       }
                 } else {
@@ -466,7 +466,7 @@ const accountMethod = {
         return ( nameList.indexOf( username ) > -1 );
     },
     getUserById: ( uid, next ) => {
-        const q = N1qlQuery.fromString('SELECT ' + fields + ', `password`, `secret`, `recoveryPhrase`, `recoveryPhraseProved` FROM `' + process.env.BUCKET + '` WHERE _type == "account" AND _id == "'
+        const q = N1qlQuery.fromString('SELECT ' + fields + ', `enable2a`, `password`, `secret`, `recoveryPhrase`, `recoveryPhraseProved` FROM `' + process.env.BUCKET + '` WHERE _type == "account" AND _id == "'
         + uid + '"');
         db.query(q, function(e, r) {
           if(e){
@@ -538,8 +538,7 @@ const accountMethod = {
     },
     saveQR: ( uid, secret, next ) => {
       const qU = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
-      '` SET secret = ' + secret +
-      ' WHERE _type == "account" AND _id == "' + uid + '" ');
+      '` SET secret = "' + secret + '" WHERE _type == "account" AND _id == "' + uid + '" ');
       db.query(qU, function(e, r, m) {
           if(e){
               console.log('error in accountMethod.saveQR');

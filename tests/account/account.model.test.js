@@ -109,10 +109,12 @@ let newAccount,
 
 const username = 'testUser';
 const password = '1A2b6O!b';
+const passwordUpdated = 'nm%o&z8Afy*m';
 const username2 = 'testUser2';
 const password2 = 'A!3k90P2';
 const badUID = uuidv4();
 const badRole = 'MasterBlasterEatsMitosis';
+const fauxIPS = { "ip": "10.0.0.0", "fwdIP": "5.0.0.0" };
 
 const testUserObj = {
   "username": username,
@@ -870,8 +872,6 @@ describe( 'Account Model Read All', () => {
 describe( 'Account Model Read Validate Credentials', () => {
 
   let badUsernameLoginResult, badPasswordLoginResult, goodLoggingResult;
-  const validationErrMsg = 'Account validation failed.';
-  const fauxIPS = { "ip": "10.0.0.0", "fwdIP": "5.0.0.0" };
 
   function attemptBadUidLogin( next ) {
     const passwordForBadLogin = "85Ie!ki49p";
@@ -979,8 +979,8 @@ describe( 'Account Model Read Validate Credentials', () => {
       expect( badPasswordLoginResult.result ).to.equal( false );
     });
 
-    it( 'badPasswordLoginResult msg should have value of var validationErrMsg: ' + validationErrMsg, () => {
-      expect( badPasswordLoginResult.msg ).to.equal( validationErrMsg );
+    it( 'badPasswordLoginResult msg should have value of var accountValidationFailure', () => {
+      expect( badPasswordLoginResult.msg ).to.equal( errMsg.accountValidationFailure );
     });
 
   });
@@ -1085,7 +1085,7 @@ describe( 'Account Model Read Token Operations', () => {
 
 });
 
-describe('Account Model Update role', () => {
+describe( 'Account Model Update role', () => {
 
   describe( 'Add Good Role to Good Account', () => {
     let update_GoodRole_GoodUser_Result;
@@ -1788,10 +1788,8 @@ describe( 'Update password', () => {
 
     let goodPasswordResult;
 
-    const goodPassword = 'nm%o&z8Afy*m';
-
     function updateAccountPassword( next ) {
-      accountModel.Update.password( testAccountUID, password, goodPassword, ( result ) => {
+      accountModel.Update.password( testAccountUID, password, passwordUpdated, ( result ) => {
         goodPasswordResult = result;
         if( result.msg ) console.log( result.msg );
         next();
@@ -2132,7 +2130,7 @@ describe( 'Process the recovery phrase.', () => {
 
 });
 
-describe('Update twoStep', () => {
+describe( 'Update twoStep', () => {
 
   describe( 'Set twoA on with good id, but no recoveryPhrase confirmation.', () => {
 
@@ -2209,7 +2207,7 @@ describe('Update twoStep', () => {
       getToken( done );
     });
 
-    after( done => done() );
+    after( done => setTimeout( done(), 1000 ) );
 
     // Property Exists
     it( 'good_twoStepResult should NOT have property msg', () => {
@@ -2295,65 +2293,220 @@ describe( 'Login with 2A', () => {
 
   describe( 'Login in with No 2A code.', () => {
 
+    let no2A_LoginResult;
+
+    function no2A_Login( next ) {
+      accountModel.Read.validateAccount( testAccountUID, passwordUpdated, fauxIPS, null, ( result ) => {
+        no2A_LoginResult = result;
+        next();
+      });
+    }
+
     before( done => {
-      done();
+      no2A_Login( done );
     });
 
     after( done => done() );
 
     // Property Exists
+    it( 'no2A_LoginResult should NOT have property data', () => {
+      expect( no2A_LoginResult ).to.not.have.property( 'data' );
+    });
+
+    it( 'no2A_LoginResult should NOT have property token', () => {
+      expect( no2A_LoginResult ).to.not.have.property( 'token' );
+    });
+
+    it( 'no2A_LoginResult should have property result', () => {
+      expect( no2A_LoginResult ).to.have.property( 'result' );
+    });
+
+    it( 'no2A_LoginResult should have property msg', () => {
+      expect( no2A_LoginResult ).to.have.property( 'msg' );
+    });
 
     // Property Type
+    it( 'no2A_LoginResult result should be a boolean', () => {
+      expect( no2A_LoginResult.result ).to.be.a( 'boolean' );
+    });
+
+    it( 'no2A_LoginResult msg should be a string', () => {
+      expect( no2A_LoginResult.msg ).to.be.a( 'string' );
+    });
 
     // Return Value
+    it( 'no2A_LoginResult result should have value of false', () => {
+      expect( no2A_LoginResult.result ).to.equal( false );
+    });
+
+    it( 'no2A_LoginResult msg should have value of var accountValidationFailure', () => {
+      expect( no2A_LoginResult.msg ).to.equal( errMsg.accountValidationFailure );
+    });
 
   });
 
   describe( 'Login with bad 2A code', () => {
 
+    let bad2A_LoginResult;
+
+    function no2A_Login( next ) {
+      accountModel.Read.validateAccount( testAccountUID, passwordUpdated, fauxIPS, 000000, ( result ) => {
+        bad2A_LoginResult =result;
+        next();
+      });
+    }
+
     before( done => {
-      done();
+      no2A_Login( done );
     });
 
     after( done => done() );
 
     // Property Exists
+    it( 'bad2A_LoginResult should NOT have property data', () => {
+      expect( bad2A_LoginResult ).to.not.have.property( 'data' );
+    });
+
+    it( 'bad2A_LoginResult should NOT have property token', () => {
+      expect( bad2A_LoginResult ).to.not.have.property( 'token' );
+    });
+
+    it( 'bad2A_LoginResult should have property result', () => {
+      expect( bad2A_LoginResult ).to.have.property( 'result' );
+    });
+
+    it( 'bad2A_LoginResult should have property msg', () => {
+      expect( bad2A_LoginResult ).to.have.property( 'msg' );
+    });
 
     // Property Type
+    it( 'bad2A_LoginResult result should be a boolean', () => {
+      expect( bad2A_LoginResult.result ).to.be.a( 'boolean' );
+    });
+
+    it( 'bad2A_LoginResult msg should be a string', () => {
+      expect( bad2A_LoginResult.msg ).to.be.a( 'string' );
+    });
 
     // Return Value
+    it( 'bad2A_LoginResult result should have value of false', () => {
+      expect( bad2A_LoginResult.result ).to.equal( false );
+    });
+
+    it( 'bad2A_LoginResult msg should have value of var accountValidationFailure', () => {
+      expect( bad2A_LoginResult.msg ).to.equal( errMsg.accountValidationFailure );
+    });
 
   });
 
   describe( 'Login with Unecessary 2A code.', () => {
 
+    let unecessary2A_LoginResult;
+
+    function no2A_Login( next ) {
+
+      accountModel.Read.validateAccount( testAccount2UID, password2, fauxIPS, 000000, ( result ) => {
+        unecessary2A_LoginResult = result;
+        next();
+      });
+    }
+
     before( done => {
-      done();
+      no2A_Login( done );
     });
 
     after( done => done() );
 
     // Property Exists
+    it( 'unecessary2A_LoginResult should NOT have property msg', () => {
+      expect( unecessary2A_LoginResult ).to.not.have.property( 'msg' );
+    });
+
+    it( 'unecessary2A_LoginResult should NOT have property data', () => {
+      expect( unecessary2A_LoginResult ).to.not.have.property( 'data' );
+    });
+
+    it( 'unecessary2A_LoginResult should have property result', () => {
+      expect( unecessary2A_LoginResult ).to.have.property( 'result' );
+    });
+
+    it( 'unecessary2A_LoginResult should have property token', () => {
+      expect( unecessary2A_LoginResult ).to.have.property( 'token' );
+    });
 
     // Property Type
+    it( 'unecessary2A_LoginResult result should be a boolean', () => {
+      expect( unecessary2A_LoginResult.result ).to.be.a( 'boolean' );
+    });
+
+    it( 'unecessary2A_LoginResult token should be a string', () => {
+      expect( unecessary2A_LoginResult.token ).to.be.a( 'string' );
+    });
 
     // Return Value
+    it( 'unecessary2A_LoginResult result should have value of true', () => {
+      expect( unecessary2A_LoginResult.result ).to.equal( true );
+    });
 
   });
 
   describe( 'Login with good 2A Code', () => {
 
-    before( done => {
-      done();
-    });
+      let good_LoginResult;
 
-    after( done => done() );
+      function no2A_Login( next ) {
+        const token = authenticator.generate( testAccount1_2ASecret );
 
-    // Property Exists
+        accountModel.Read.validateAccount( testAccountUID, passwordUpdated, fauxIPS, token, ( result ) => {
+          good_LoginResult = result;
+          if ( result.msg ) {
+            console.log( 'result.msg' );
+            console.log( result.msg );
+            console.log( );
+            console.log( 'testAccount1_2ASecret' );
+            console.log( testAccount1_2ASecret );
 
-    // Property Type
+          }
+          next();
+        });
+      }
 
-    // Return Value
+      before( done => {
+        no2A_Login( done );
+      });
+
+      after( done => done() );
+
+      // Property Exists
+      it( 'good_LoginResult should NOT have property msg', () => {
+        expect( good_LoginResult ).to.not.have.property( 'msg' );
+      });
+
+      it( 'good_LoginResult should NOT have property data', () => {
+        expect( good_LoginResult ).to.not.have.property( 'data' );
+      });
+
+      it( 'good_LoginResult should have property result', () => {
+        expect( good_LoginResult ).to.have.property( 'result' );
+      });
+
+      it( 'good_LoginResult should have property token', () => {
+        expect( good_LoginResult ).to.have.property( 'token' );
+      });
+
+      // Property Type
+      it( 'good_LoginResult result should be a boolean', () => {
+        expect( good_LoginResult.result ).to.be.a( 'boolean' );
+      });
+
+      it( 'good_LoginResult token should be a string', () => {
+        expect( good_LoginResult.token ).to.be.a( 'string' );
+      });
+
+      // Return Value
+      it( 'good_LoginResult result should have value of true', () => {
+        expect( good_LoginResult.result ).to.equal( true );
+      });
 
   });
 
