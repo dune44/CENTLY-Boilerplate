@@ -3,6 +3,7 @@ const chai = require('chai');
 const couchbase = require('couchbase');
 const db = require('./../../controllers/db');
 const dirtyChai = require('dirty-chai');
+const { authenticator } = require('otplib');
 const expect = chai.expect;
 const N1qlQuery = couchbase.N1qlQuery;
 const roles = require('./../../config/roles');
@@ -28,8 +29,8 @@ describe( '', () => {
   // Return Value
 
 });
-
 */
+
 const errMsg = require('./../../controllers/account.errMsg');
 describe( 'Error msg sanity check.', () => {
 
@@ -96,7 +97,10 @@ describe( 'Error msg sanity check.', () => {
 let newAccount,
   newAccount2,
   testAccountUID,
+  testAccount1_2ASecret,
+  recoveryPhraseUser1,
   testAccount2UID,
+  testAccount2_2ASecret,
   readAccountByUsernameResult,
   newBadPasswordAccount,
   newBadUsernameAccount,
@@ -606,7 +610,7 @@ describe( 'Account Model Read accountByUsername', () => {
 
   });
 
-    describe( 'Read Account with Bad Username', () => {
+  describe( 'Read Account with Bad Username', () => {
 
     let readBadUsernameAccountResult;
     const badUsername_ReadBadUsernameAccount = 'WillowOfWindsDate';
@@ -870,36 +874,23 @@ describe( 'Account Model Read Validate Credentials', () => {
   const fauxIPS = { "ip": "10.0.0.0", "fwdIP": "5.0.0.0" };
 
   function attemptBadUidLogin( next ) {
-    const validationObj = {
-        "uid": badUID,
-        "password": "85Ie!ki49p",
-        "ips": fauxIPS,
-    };
-    accountModel.Read.validateAccount( validationObj, ( result ) => {
+    const passwordForBadLogin = "85Ie!ki49p";
+    accountModel.Read.validateAccount( badUID, passwordForBadLogin, fauxIPS, null, ( result ) => {
       badUsernameLoginResult = result;
       next();
     });
   }
 
   function attemptBadPasswordLogin( next ) {
-    const testUserObj = {
-        "uid": testAccountUID,
-        "password": "2M@55iP931p",
-        "ips": fauxIPS,
-    };
-    accountModel.Read.validateAccount( testUserObj, ( result ) => {
+    const BadPassword = "2M@55iP931p";
+    accountModel.Read.validateAccount( testAccountUID, BadPassword, fauxIPS, null, ( result ) => {
       badPasswordLoginResult = result;
       next();
     });
   }
 
   function attemptGoodLogin( next ) {
-    const testUserObj = {
-      "uid": testAccountUID,
-      "password": password,
-      "ips": fauxIPS,
-    };
-    accountModel.Read.validateAccount( testUserObj, ( result ) => {
+    accountModel.Read.validateAccount( testAccountUID, password, fauxIPS, null, ( result ) => {
       validationToken = result.token;
       goodLoggingResult = result;
       next();
@@ -1432,7 +1423,7 @@ describe( 'Account Model Read isInRole', () => {
       get_empty_IsInRole( done );
     });
 
-    after( ( done ) => done() );
+    after( done => done() );
 
     // Property Exists
     it( 'empty_isInRoleResult should NOT have property error', () => {
@@ -1461,7 +1452,7 @@ describe( 'Account Model Read isInRole', () => {
       expect( empty_isInRoleResult.result ).to.equal( false );
     });
 
-  });
+});
 
   describe( 'Read populated isInRole with Good UID and Good Role', () => {
     let populated_isInRoleResult;
@@ -1906,10 +1897,11 @@ describe( 'generate a QRcode and secret for 2a', () => {
   let qrcodeResult;
 
   function getSecret( next ) {
-    generatedSecret = accountModel.Read.generateQRcode( ( result ) => {
+    generatedSecret = accountModel.Update.generateQRcode( testAccountUID, ( result ) => {
       qrcodeResult = result;
+      testAccount1_2ASecret = result.secret.base32;
+      next();
     });
-    next();
   }
 
   before( ( done ) => getSecret( done ) );
@@ -1917,12 +1909,16 @@ describe( 'generate a QRcode and secret for 2a', () => {
   after( done => done() );
 
   // Property Exists
-  it( 'qrcodeResult should have property secret', () => {
-    expect( qrcodeResult ).to.have.property( 'secret' );
-  });
-
   it( 'qrcodeResult should have property data_url', () => {
     expect( qrcodeResult ).to.have.property( 'data_url' );
+  });
+
+  it( 'qrcodeResult should have property result', () => {
+    expect( qrcodeResult ).to.have.property( 'result' );
+  });
+
+  it( 'qrcodeResult should have property secret', () => {
+    expect( qrcodeResult ).to.have.property( 'secret' );
   });
 
   it( 'qrcodeResult.secret should have property ascii', () => {
@@ -1942,6 +1938,10 @@ describe( 'generate a QRcode and secret for 2a', () => {
   });
 
   // Property Type
+  it( 'qrcodeResult.data_url should be a string', () => {
+    expect( qrcodeResult.data_url ).to.be.a( 'string' );
+  });
+
   it( 'qrcodeResult.secret should be an object', () => {
     expect( qrcodeResult.secret ).to.be.a( 'object' );
   });
@@ -1962,46 +1962,189 @@ describe( 'generate a QRcode and secret for 2a', () => {
     expect( qrcodeResult.secret.otpauth_url ).to.be.a( 'string' );
   });
 
-});
-/*
-describe( 'Get the recovery phrase.', () => {
-
-  let recoveryPhrase;
-
-  function getRecoveryPhrase( testAccountUID, next ) {
-
-      next();
-
-  }
-
-  before( ( done ) => {
-    done();
-  });
-
-  after( done => done() );
-
-  // Property Type
-  it( 'secretResult6Word should be a string', () => {
-    expect( secretResult6Word ).to.be.a( 'string' );
+  it( 'qrcodeResult.result should be a boolean', () => {
+    expect( qrcodeResult.result ).to.be.a( 'boolean' );
   });
 
   // Return Value
-  it( 'secretResult6Word should have 6 words.', () => {
-    const wordCount = secretResult6Word.split(' ');
-    expect( wordCount.length ).to.equal( 6 );
+  it( 'qrcodeResult result should have value of true', () => {
+    expect( qrcodeResult.result ).to.equal( true );
+  });
+
+
+});
+
+describe( 'Process the recovery phrase.', () => {
+
+  describe( 'Generate phrase', () => {
+
+    function getRecoveryPhrase( next ) {
+      accountModel.Read.passphrase( testAccountUID, ( phrase ) => {
+        recoveryPhraseUser1 = phrase;
+        next();
+      });
+    }
+
+    before( ( done ) => {
+      getRecoveryPhrase( done );
+    });
+
+    after( done => done() );
+
+    // Property Type
+    it( 'recoveryPhraseUser1 should be a string', () => {
+      expect( recoveryPhraseUser1 ).to.be.a( 'string' );
+    });
+
+    // Return Value
+    it( 'recoveryPhraseUser1 should have ', () => {
+      expect( recoveryPhraseUser1 ).to.have.lengthOf( 32 );
+    });
+
+  });
+
+  describe( 'Validate User has phrase correct', () => {
+
+    let goodPassphraseProvedResult;
+
+    function get_Good_PassphraseProved ( next ) {
+      accountModel.Update.passphraseProved( testAccountUID, recoveryPhraseUser1, ( result ) => {
+        goodPassphraseProvedResult = result;
+        next();
+      });
+    }
+
+    before( ( done ) => {
+      get_Good_PassphraseProved( done );
+    });
+
+    after( done => done() );
+
+    // Property Exists
+    it( 'goodPassphraseProvedResult should have property result', () => {
+      expect( goodPassphraseProvedResult ).to.have.property( 'result' );
+    });
+
+    // Property Type
+    it( 'goodPassphraseProvedResult.result should be a boolean', () => {
+      expect( goodPassphraseProvedResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'goodPassphraseProvedResult result should have value of true', () => {
+      expect( goodPassphraseProvedResult.result ).to.equal( true );
+    });
+
+  });
+
+  describe( 'Incorrect passphrase ', () => {
+
+    let badPassphraseProvedResult;
+    const badRecoveryPhrase = '62y$TqqXdwSg4y%a67pzjRdA&wvtM2F@';
+
+    function get_Good_PassphraseProved ( next ) {
+      accountModel.Update.passphraseProved( testAccountUID, badRecoveryPhrase, ( result ) => {
+        badPassphraseProvedResult = result;
+        next();
+      });
+    }
+
+    before( ( done ) => {
+      get_Good_PassphraseProved( done );
+    });
+
+    after( done => done() );
+
+    // Property Exists
+    it( 'badPassphraseProvedResult should have property msg', () => {
+      expect( badPassphraseProvedResult ).to.have.property( 'msg' );
+    });
+
+    it( 'badPassphraseProvedResult should have property result', () => {
+      expect( badPassphraseProvedResult ).to.have.property( 'result' );
+    });
+
+    // Property Type
+    it( 'badPassphraseProvedResult.msg should be a string', () => {
+      expect( badPassphraseProvedResult.msg ).to.be.a( 'string' );
+    });
+
+    it( 'badPassphraseProvedResult.result should be a boolean', () => {
+      expect( badPassphraseProvedResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'badPassphraseProvedResult.msg should have value of msg', () => {
+      expect( badPassphraseProvedResult.msg ).to.equal( errMsg.accountValidationFailure );
+    });
+
+    it( 'badPassphraseProvedResult.result should have value of false', () => {
+      expect( badPassphraseProvedResult.result ).to.equal( false );
+    });
+
+  });
+
+  describe( 'Bad user for recoveryPhrase', () => {
+
+    let badUser_PassphraseProvedResult;
+
+    function get_BadUID_PassphraseRecoveryProved ( next ) {
+      accountModel.Update.passphraseProved( badUID, recoveryPhraseUser1, ( result ) => {
+        badUser_PassphraseProvedResult = result;
+        next();
+      });
+    }
+
+    before( ( done ) => {
+      get_BadUID_PassphraseRecoveryProved( done );
+    });
+
+    after( done => done() );
+
+    // Property Exists
+    it( 'badUser_PassphraseProvedResult should have property result', () => {
+      expect( badUser_PassphraseProvedResult ).to.have.property( 'result' );
+    });
+
+    it( 'badUser_PassphraseProvedResult should have property msg', () => {
+      expect( badUser_PassphraseProvedResult ).to.have.property( 'msg' );
+    });
+
+    // Property Type
+    it( 'badUser_PassphraseProvedResult.msg should be a string', () => {
+      expect( badUser_PassphraseProvedResult.msg ).to.be.a( 'string' );
+    });
+
+    it( 'badUser_PassphraseProvedResult.result should be a boolean', () => {
+      expect( badUser_PassphraseProvedResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'badUser_PassphraseProvedResult.msg should have value of errMsg.accountNotFound', () => {
+      expect( badUser_PassphraseProvedResult.msg ).to.equal( errMsg.accountNotFound );
+    });
+
+    it( 'badUser_PassphraseProvedResult.result should have value of false', () => {
+      expect( badUser_PassphraseProvedResult.result ).to.equal( false );
+    });
+
   });
 
 });
 
 describe('Update twoStep', () => {
 
-  describe( 'Set twoA on with good id', () => {
+  describe( 'Set twoA on with good id, but no recoveryPhrase confirmation.', () => {
 
-    let twoAGoodIdResult;
+    let noConfirm_twoStepResult;
+    const twoA = true;
+    const token = 000000;
 
     function updateTwoA( next ) {
-
-      next();
+      accountModel.Update.twoStep( testAccount2UID, token, twoA, ( result ) => {
+        noConfirm_twoStepResult = result;
+        next();
+      })
     }
 
     before( ( done ) => {
@@ -2011,17 +2154,202 @@ describe('Update twoStep', () => {
     after( done => done() );
 
     // Property Exists
-    it( 'twoAGoodIdResult should NOT have property error', () => {
-      expect( twoAGoodIdResult ).to.not.have.property( 'error' );
+    it( 'noConfirm_twoStepResult should NOT have property error', () => {
+      expect( noConfirm_twoStepResult ).to.not.have.property( 'error' );
     });
 
-    it( 'twoAGoodIdResult should have property result', () => {
-      expect( twoAGoodIdResult ).to.have.property( 'result' );
+    it( 'noConfirm_twoStepResult should have property msg', () => {
+      expect( noConfirm_twoStepResult ).to.have.property( 'msg' );
     });
 
-    it( 'twoAGoodIdResult should have property recoveryPhrase', () => {
-      expect( twoAGoodIdResult ).to.have.property( 'recoveryPhrase' );
+    it( 'noConfirm_twoStepResult should have property result', () => {
+      expect( noConfirm_twoStepResult ).to.have.property( 'result' );
     });
+
+    // Property Type
+    it( 'noConfirm_twoStepResult.msg should be a string', () => {
+      expect( noConfirm_twoStepResult.msg ).to.be.a( 'string' );
+    });
+
+    it( 'noConfirm_twoStepResult.result should be a boolean', () => {
+      expect( noConfirm_twoStepResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'noConfirm_twoStepResult.msg should have value of recoveryPhraseNotProved', () => {
+      expect( noConfirm_twoStepResult.msg ).to.equal( errMsg.recoveryPhraseNotProved );
+    });
+
+    it( 'noConfirm_twoStepResult.result should have value of true', () => {
+      expect( noConfirm_twoStepResult.result ).to.equal( false );
+    });
+
+  });
+
+  describe('Set twoA on with good id, good recovery, good token', () => {
+
+    let good_twoStepResult;
+    const twoA = true;
+
+    function getToken( next ) {
+      const token = authenticator.generate( testAccount1_2ASecret );
+      // console.log( 'token ' + token );
+      accountModel.Update.twoStep( testAccountUID, token, twoA, ( result ) => {
+        good_twoStepResult = result;
+        if( result.msg ) {
+          console.log( 'result.msg' );
+          console.log( result.msg );
+        }
+        next();
+      });
+
+    }
+
+    before( ( done ) => {
+      getToken( done );
+    });
+
+    after( done => done() );
+
+    // Property Exists
+    it( 'good_twoStepResult should NOT have property msg', () => {
+      expect( good_twoStepResult ).to.not.have.property( 'msg' );
+    });
+
+    it( 'good_twoStepResult should NOT have property error', () => {
+      expect( good_twoStepResult ).to.not.have.property( 'error' );
+    });
+
+    it( 'good_twoStepResult should have property result', () => {
+      expect( good_twoStepResult ).to.have.property( 'result' );
+    });
+
+    // Property Type
+    it( 'good_twoStepResult.result should be a boolean', () => {
+      expect( good_twoStepResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'good_twoStepResult.result should have value of true', () => {
+      expect( good_twoStepResult.result ).to.equal( true );
+    });
+
+  });
+
+  describe( 'Set twoA on bad id', () => {
+
+    let badID_twoStepResult;
+    const twoA = true;
+
+    function updateTwoA( next ) {
+      const token = authenticator.generate( testAccount1_2ASecret );
+
+      accountModel.Update.twoStep( badUID, token, twoA, ( result ) => {
+        badID_twoStepResult = result;
+        next();
+      })
+    }
+
+    before( ( done ) => {
+      updateTwoA( done );
+    });
+
+    after( done => done() );
+
+    // Property Exists
+    it( 'badID_twoStepResult should NOT have property error', () => {
+      expect( badID_twoStepResult ).to.not.have.property( 'error' );
+    });
+
+    it( 'badID_twoStepResult should have property msg', () => {
+      expect( badID_twoStepResult ).to.have.property( 'msg' );
+    });
+
+    it( 'badID_twoStepResult should have property result', () => {
+      expect( badID_twoStepResult ).to.have.property( 'result' );
+    });
+
+    // Property Type
+    it( 'badID_twoStepResult.msg should be a string', () => {
+      expect( badID_twoStepResult.msg ).to.be.a( 'string' );
+    });
+
+    it( 'badID_twoStepResult.result should be a boolean', () => {
+      expect( badID_twoStepResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'badID_twoStepResult.msg should have value of accountNotFound', () => {
+      expect( badID_twoStepResult.msg ).to.equal( errMsg.accountNotFound );
+    });
+
+    it( 'badID_twoStepResult.result should have value of true', () => {
+      expect( badID_twoStepResult.result ).to.equal( false );
+    });
+
+  });
+
+});
+
+describe( 'Login with 2A', () => {
+
+  describe( 'Login in with No 2A code.', () => {
+
+    before( done => {
+      done();
+    });
+
+    after( done => done() );
+
+    // Property Exists
+
+    // Property Type
+
+    // Return Value
+
+  });
+
+  describe( 'Login with bad 2A code', () => {
+
+    before( done => {
+      done();
+    });
+
+    after( done => done() );
+
+    // Property Exists
+
+    // Property Type
+
+    // Return Value
+
+  });
+
+  describe( 'Login with Unecessary 2A code.', () => {
+
+    before( done => {
+      done();
+    });
+
+    after( done => done() );
+
+    // Property Exists
+
+    // Property Type
+
+    // Return Value
+
+  });
+
+  describe( 'Login with good 2A Code', () => {
+
+    before( done => {
+      done();
+    });
+
+    after( done => done() );
+
+    // Property Exists
 
     // Property Type
 
@@ -2033,7 +2361,29 @@ describe('Update twoStep', () => {
 
 describe('Delete account', () => {
 
-  describe( '', () => {
+  describe( 'Delete Account with bad ID', () => {
+
+    before( done => {
+      done();
+    });
+
+    after( done => done() );
+
+    // Property Exists
+
+    // Property Type
+
+    // Return Value
+
+  });
+
+  describe( 'Delete Account with good ID', () => {
+
+    before( done => {
+      done();
+    });
+
+    after( done => done() );
 
     // Property Exists
 
@@ -2044,4 +2394,55 @@ describe('Delete account', () => {
   });
 
 });
-*/
+
+describe( 'Recover Account', () => {
+
+  describe( 'Attempt recovery with bad passphrase.', () => {
+
+      before( done => {
+        done();
+      });
+
+      after( done => done() );
+
+      // Property Exists
+
+      // Property Type
+
+      // Return Value
+
+  });
+
+  describe( 'Recover account with good passphrase.', () => {
+
+      before( ( done ) => {
+        done();
+      });
+
+      after( done => done() );
+
+      // Property Exists
+
+      // Property Type
+
+      // Return Value
+
+  });
+
+});
+
+describe( 'Forgot password.', () => {
+
+    before( done => {
+      done();
+    });
+
+    after( done => done() );
+
+    // Property Exists
+
+    // Property Type
+
+    // Return Value
+
+});

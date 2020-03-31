@@ -120,10 +120,29 @@ const accountModel = {
               }
           });
         },
-        generateQRcode: ( ) => speakeasy.generateSecret(),
-        passphrase: ( next ) => {
+        passphrase: ( uid, next ) => {
           const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`!@#$%^&*-_.';
-
+          let phrase = '';
+          for (var i = 0; i < 32; i++) {
+            phrase += chars.substr( Math.floor(Math.random() * chars.length), 1);
+          }
+          let q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
+          '` SET `recoveryPhrase` = $1 WHERE _type == "account" AND _id == "' +
+          uid + '" ');
+          accountMethod.ink( phrase, ( hash, inkMsg ) => {
+            db.query(q, [hash], function(e, r, m) {
+              if(e){
+                console.log('error in accountModel.Update.password');
+                console.log(e);
+                next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+              }else{
+                if( m.status == 'success' && m.metrics.mutationCount == 1 )
+                  next( phrase );
+                else
+                  next({ "msg": errMsg.updateGenericFail, "result": false });
+              }
+            });
+          });
         },
         rolesById: ( uid, next)  => {
             const q = N1qlQuery.fromString('SELECT _id, `roles` FROM `' + process.env.BUCKET +
@@ -189,13 +208,20 @@ const accountModel = {
                 }
             });
         },
-        validateAccount: ( validationObj, next ) => {
-            accountMethod.getUserById( validationObj.uid, ( account ) => {
+        validateAccount: ( uid, password, ips, twoAtoken, next ) => {
+            accountMethod.getUserById( uid, ( account ) => {
                 if( account.result ) {
-                    accountMethod.passwordCompare( validationObj.password, account.data.password,
+                    if( account.data.twoA ) {
+                        const twoAResult = validate2a( account.data.secret, twoAtoken );
+                        if( !twoAResult ) {
+                            next({ "msg": errMsg.accountValidationFailure, "result": false });
+                            return;
+                        }
+                    }
+                    accountMethod.passwordCompare( password, account.data.password,
                       ( result ) => {
                         if( result ){
-                          accountMethod.updateToken( validationObj, ( token ) => {
+                          accountMethod.updateToken( uid, ips, ( token ) => {
                             next({ "result": result, "token": token });
                           });
                         } else {
@@ -258,23 +284,63 @@ const accountModel = {
                 next({ "msg": 'Email cannot be blank', "result": false});
             }
         },
-        passphrase: ( uid, phrase, next ) => {
-          accountMethod.ink( phrase, ( hash, inkMsg ) => {
-
+        generateQRcode: ( uid, next ) => {
+          const secret = speakeasy.generateSecret();
+          QRCode.toDataURL(secret.otpauth_url, function(e, data_url) {
+            if( e ) {
+              next({ "error": e, "result": false });
+            } else{
+              accountMethod.saveQR( uid, secret.base32, ( result ) => {
+                if( result.result ) {
+                  next({ "secret": secret, "data_url": data_url, "result": true });
+                } else {
+                  next( result );
+                }
+              });
+            }
           });
-          let q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
-          '` SET `recoveryPhrase` = $1 WHERE _type == "account" AND _id == "' +
-          uid + '" ');
-          db.query(q, [secretPhrase], function(e, r, m) {
+        },
+        passphraseProved: ( uid, phrase, next ) => {
+          const qR = N1qlQuery.fromString('SELECT `recoveryPhrase` FROM `' + process.env.BUCKET +
+          '` WHERE _type == "account" AND _id == "' + uid + '" ');
+          db.query( qR, ( e, r ) => {
               if(e){
-                  console.log('error in accountModel.Update.password');
+                  console.log('error in accountModel.Update.passphrase reading account.');
                   console.log(e);
-                  next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+                  next({ "msg": e, "result": false});
               }else{
-                  if( m.status == 'success' && m.metrics.mutationCount == 1 )
-                      next({ "result": true });
-                  else
-                      next({ "msg": errMsg.updateGenericFail, "result": false });
+                  if( r.length === 1 ) {
+                      accountMethod.passwordCompare( phrase, r[0].recoveryPhrase, ( result ) => {
+                        if( result ) {
+                          let qU = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
+                          '` SET `recoveryPhraseProved` = true WHERE _type == "account" AND _id == "' +
+                          uid + '" ');
+                          db.query(qU, function(e, r, m) {
+                              if(e){
+                                  console.log('error in accountModel.Update.passphraseProved');
+                                  console.log(e);
+                                  next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+                              }else{
+                                  if( m.status == 'success' && m.metrics.mutationCount === 1 ) {
+                                      next({ "result": true });
+                                  } else {
+                                      if( r.length === 0 ) {
+                                          next({ "msg": errMsg.accountNotFound, "result": false });
+                                      } else {
+                                          next({ "msg": errMsg.updateGenericFail, "result": false });
+                                      }
+                                  }
+                              }
+                          });
+                        } else {
+                          next({ "msg": errMsg.accountValidationFailure, "result": false });
+                        }
+                      });
+                  } else if( r.length === 0 ) {
+                    next({ "msg": errMsg.accountNotFound, "result": false });
+                  } else {
+                    next({ "msg": 'Unexpected result', "result": false });
+                  }
               }
           });
         },
@@ -322,10 +388,10 @@ const accountModel = {
                         if( acct.data.roles ) acct.data.roles.push(role);
                         else acct.data.roles = [ role ];
 
-                        const q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
+                        const qU = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
                         '` SET roles = ' + JSON.stringify( acct.data.roles ) +
                         ' WHERE _type == "account" AND _id == "' + uid + '" ');
-                        db.query(q, function(e, r, m) {
+                        db.query(qU, function(e, r, m) {
                             if(e){
                                 console.log('error in accountModel.Update.role');
                                 console.log(e);
@@ -348,26 +414,36 @@ const accountModel = {
         },
         twoStep: ( uid, token, twoA, next ) => {
             accountMethod.getUserById( uid, ( account ) => {
-                if( account.enable2a != twoA ) {
-                    if( account.enable2a ) {
-                        accountMethod.validate2a( account.secret, token, ( validated ) => {
+                if( account.result ){
+                    if( account.data.recoveryPhraseProved ) {
+                        if( account.data.enable2a != twoA && account.data.enable2a ) {
+                          accountMethod.validate2a( account.data.secret, token, ( validated ) => {
                             if( validated ) {
-                                accountMethod.update2a( uid, twoA, ( resultObj ) => {
-                                    next( resultObj );
-                                });
+                              accountMethod.update2a( uid, twoA, ( resultObj ) => {
+                                next( resultObj );
+                              });
                             } else {
-                                next({ "msg": '', "result": false});
+                              next({ "msg": errMsg.accountValidationFailure, "result": false});
                             }
-                        });
-                    }else{
-                        next();
-                    }
+                          });
+                        } else {
+                          accountMethod.update2a( uid, twoA, ( resultObj ) => {
+                            next( resultObj );
+                          });
+                        }
+                      } else {
+        
+                        next({ "msg": errMsg.recoveryPhraseNotProved, "result": false });
+                      }
+                } else {
+                    next({ "msg": errMsg.accountNotFound, "result": false });
                 }
+
             });
         }
     },
     Delete: {
-        account: ( uid, password, next) => {
+        account: ( uid, password, token, next) => {
 
             next();
 
@@ -390,35 +466,35 @@ const accountMethod = {
         return ( nameList.indexOf( username ) > -1 );
     },
     getUserById: ( uid, next ) => {
-        const q = N1qlQuery.fromString('SELECT ' + fields + ', `password`, `secret` FROM `' +
-        process.env.BUCKET + '` WHERE _type == "account" AND _id == "' + uid + '"');
+        const q = N1qlQuery.fromString('SELECT ' + fields + ', `password`, `secret`, `recoveryPhrase`, `recoveryPhraseProved` FROM `' + process.env.BUCKET + '` WHERE _type == "account" AND _id == "'
+        + uid + '"');
         db.query(q, function(e, r) {
-            if(e){
-                console.log('error in accountMethod.getUserById');
-                console.log(e);
-                next({ "error": e, "msg": errMsg.errorMsg, "result": false });
-            }else{
-                if( r.length === 1)
-                    next({ "data": r[0], "result": true });
-                else if( r.length === 0 )
-                    next({ "msg": errMsg.accountNotFound, "result": false });
-                else
-                    next({ "msg": errMsg.errorMsg, "result": false });
-            }
+          if(e){
+            console.log('error in accountMethod.getUserById');
+            console.log(e);
+            next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+          }else{
+            if( r.length === 1)
+              next({ "data": r[0], "result": true });
+            else if( r.length === 0 )
+              next({ "msg": errMsg.accountNotFound, "result": false });
+            else
+              next({ "msg": errMsg.errorMsg, "result": false });
+          }
         });
     },
-    ink: ( password, done ) => {
+    ink: ( password, next ) => {
         bcrypt.genSalt( 5, function( e, salt ) {
             if( e ) {
                 console.error( e );
-                done( false, e );
+                next( false, e );
             } else {
                 bcrypt.hash( password, salt, function( er, hash ) {
                     if( er ) {
                         console.error( er );
-                        done( false, er );
+                        next( false, er );
                     }else{
-                        done( hash, null );
+                        next( hash, null );
                     }
                 });
             }
@@ -427,13 +503,13 @@ const accountMethod = {
     isVal: ( value ) => {
         return ( value && value !== null && value !== '' );
     },
-    passwordCompare: ( pwd, hash, done ) => {
+    passwordCompare: ( pwd, hash, next ) => {
       bcrypt.compare( pwd, hash, function( e, r ) {
         if( e ) {
           console.log(' Error accountMethod passwordCompare');
           console.log( e );
         } else {
-          done( r );
+          next( r );
         }
       });
     },
@@ -460,6 +536,23 @@ const accountMethod = {
     roleExists: ( role ) => {
         return roles.includes(role);
     },
+    saveQR: ( uid, secret, next ) => {
+      const qU = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
+      '` SET secret = ' + secret +
+      ' WHERE _type == "account" AND _id == "' + uid + '" ');
+      db.query(qU, function(e, r, m) {
+          if(e){
+              console.log('error in accountMethod.saveQR');
+              console.log(e);
+              next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+          }else{
+              if( m.status == 'success' && m.metrics.mutationCount == 1 )
+                  next({ "result": true });
+              else
+                  next({ "msg": errMsg.updateGenericFail, "result": false });
+          }
+      });
+    },
     update2a: ( uid, twoA, next ) => {
         let q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET + '` SET `enable2a` = ' +
         twoA + ' WHERE _type == "account" AND _id == "' + uid + '" ');
@@ -476,23 +569,19 @@ const accountMethod = {
             }
         });
     },
-    updateToken: ( validationObj, next ) => {
-        const ips = {
-          ip: validationObj.ips.ip,
-          fwdIP: validationObj.ips.fwdIP
-        };
-        const token = jwt.sign({ _id: validationObj.uid, ips }, process.env.JWT_SECRET,
+    updateToken: ( uid, ips, next ) => {
+        const token = jwt.sign({ _id: uid, ips }, process.env.JWT_SECRET,
           { expiresIn: '7 days' } );
         // Pass back token to be stored by user.
         next( token );
     },
-    validate2a: ( secret, token, next ) => {
+    validate2a: ( secret, token ) => {
         const result = speakeasy.totp.verify({
             "secret": secret,
             "encoding": 'base32',
             "token": token
         });
-        next( result );
+        return result;
     },
     validateEmail: ( email ) => validator.isEmail( email ),
     validatePassword: ( password ) => {

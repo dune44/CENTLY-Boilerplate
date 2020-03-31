@@ -11,64 +11,66 @@ const trim = ( str ) => str.trim();
 const tlc = ( str ) => str.toLowerCase();
 const validateUsername = ( value ) => ( value.length > 2 );
 const validatePassword = ( value ) => ( value.length > 30 );
-//const validateEmail = ( value ) => ( validator.isEmail( value ) );
 
 const accountSchema = {
     _id: {
-        default: uuidv4(),
-        required: true,
-        type: String
+      default: uuidv4(),
+      required: true,
+      type: String
     },
     _type: {
-        default: 'account',
-        required: true,
-        type: String
+      default: 'account',
+      required: true,
+      type: String
     },
     username: {
-        required: true,
-        transform: [trim],
-        validate: validateUsername,
-        type: String
+      required: true,
+      transform: [trim],
+      validate: validateUsername,
+      type: String
     },
     password: {
-        required: true,
-        transform: [trim],
-        validate: validatePassword,
-        type: String
+      required: true,
+      transform: [trim],
+      validate: validatePassword,
+      type: String
     },
     email: {
-        required: true,
-        transform: [tlc,trim],
-        type: String
+      required: true,
+      transform: [tlc,trim],
+      type: String
     },
     enable2a: {
-     type: Boolean
+      type: Boolean
     },
     secret: {
-        type: String
+      type: String
     },
     qrUri:{
-        type: String
+      type: String
     },
     roles: {
-        type: Array
+      type: Array
     },
     blocked: {
-        default: false,
-        type: Boolean
+      default: false,
+      type: Boolean
     },
     deleted: {
-        default: false,
-        type: Boolean
+      default: false,
+      type: Boolean
     },
     token: {
-        type: Array
+      type: Array
     },
     date: {
-        type: Object
+      type: Object
     },
     recoveryPhrase: {
-        type: String
+      type: String
+    },
+    recoveryPhraseProved: {
+      type: Boolean
     }
 };
 
