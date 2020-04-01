@@ -2520,8 +2520,7 @@ describe('Delete account', () => {
 
     function badID_deleteAccount( next ) {
       const token = authenticator.generate( testAccount1_2ASecret );
-
-      accountModel.Delete.accountSoftly( testAccountUID, passwordUpdated, fauxIPS, token, ( result ) => {
+      accountModel.Delete.accountSoftly( badUID, passwordUpdated, fauxIPS, token, ( result ) => {
         badID_deleteAccountResult = result;
         next();
       });
@@ -2562,15 +2561,16 @@ describe('Delete account', () => {
 
     let good_softDeleteAccountResult;
 
-    function badID_softDeleteAccount( next ) {
-
-      //good_deleteAccountResult = result;
-      next();
-
+    function good_softDeleteAccount( next ) {
+      const token = authenticator.generate( testAccount1_2ASecret );
+      accountModel.Delete.accountSoftly( testAccountUID, passwordUpdated, fauxIPS, token, ( result ) => {
+        good_deleteAccountResult = result;
+        next();
+      });
     }
 
     before( done => {
-      badID_deleteAccount( done );
+      good_softDeleteAccount( done );
     });
 
     after( done => done() );
