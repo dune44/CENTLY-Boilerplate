@@ -2207,7 +2207,7 @@ describe( 'Update twoStep', () => {
       getToken( done );
     });
 
-    after( done => setTimeout( done(), 1000 ) );
+    after( done => setTimeout( done(), 1 ) );
 
     // Property Exists
     it( 'good_twoStepResult should NOT have property msg', () => {
@@ -2516,34 +2516,82 @@ describe('Delete account', () => {
 
   describe( 'Delete Account with bad ID', () => {
 
+    let badID_deleteAccountResult;
+
+    function badID_deleteAccount( next ) {
+
+      //badID_deleteAccountResult = result;
+      next();
+
+    }
+
     before( done => {
-      done();
+      badID_deleteAccount( done );
     });
 
     after( done => done() );
 
     // Property Exists
+    it( 'badID_deleteAccountResult should have property result', () => {
+      expect( badID_deleteAccountResult ).to.have.property( 'result' );
+    });
+
+    it( 'badID_deleteAccountResult should have property msg', () => {
+      expect( badID_deleteAccountResult ).to.have.property( 'msg' );
+    });
 
     // Property Type
+    it( 'badID_deleteAccountResult result should be a boolean', () => {
+      expect( badID_deleteAccountResult.result ).to.be.a( 'boolean' );
+    });
+
+    it( 'badID_deleteAccountResult msg should be a string', () => {
+      expect( badID_deleteAccountResult.msg ).to.be.a( 'string' );
+    });
 
     // Return Value
+    it( 'badID_deleteAccountResult result should have value of false', () => {
+      expect( badID_deleteAccountResult.result ).to.equal( false );
+    });
 
   });
 
   describe( 'Delete Account with good ID', () => {
 
+    let good_deleteAccountResult;
+
+    function badID_deleteAccount( next ) {
+
+      //good_deleteAccountResult = result;
+      next();
+
+    }
+
     before( done => {
-      done();
+      badID_deleteAccount( done );
     });
 
     after( done => done() );
 
     // Property Exists
+    it( 'good_deleteAccountResult should NOT have property msg', () => {
+      expect( good_deleteAccountResult ).to.not.have.property( 'msg' );
+    });
+
+    it( 'good_deleteAccountResult should have property result', () => {
+      expect( good_deleteAccountResult ).to.have.property( 'result' );
+    });
 
     // Property Type
+    it( 'good_deleteAccountResult result should be a boolean', () => {
+      expect( good_deleteAccountResult.result ).to.be.a( 'boolean' );
+    });
 
     // Return Value
-
+    it( 'good_deleteAccountResult result should have value of false', () => {
+      expect( good_deleteAccountResult.result ).to.equal( true );
+    });
+    
   });
 
 });
