@@ -443,11 +443,34 @@ const accountModel = {
         }
     },
     Delete: {
-        account: ( uid, password, token, next) => {
+        accountSoftly: ( uid, password, ips, twoAtoken, next) => {
+          accountModel.Read.validateAccount( uid, password, ips, twoAtoken, ( result ) => {
+            if( result.result ) {
+              const qU = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
+              '` SET deleted = true WHERE _type == "account" AND _id == "' + uid + '" ');
+              db.query(qU, function(e, r, m) {
+                if(e){
+                  console.log('error in accountModel.Delete.accountSoftly');
+                  console.log(e);
+                  next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+                }else{
+                  if( m.status == 'success' && m.metrics.mutationCount === 1 ) {
+                    next({ "result": true });
+                  } else {
+                    next({ "msg": errMsg.updateGenericFail, "result": false });
+                  }
+                }
+              });
+            } else {
+              next( result );
+            }
+          });
+        },
+        accountHard: ( uid, password, token, next) => {
 
             next();
 
-        }
+        },
     }
 };
 // Non Public Methods
