@@ -1815,15 +1815,14 @@ describe( 'Update password', () => {
       expect( goodPasswordResult ).to.be.a( 'Object' );
     });
 
-    it( 'goodPasswordResult result should be a boolean', () => {
+    it( 'goodPasswordResult.result should be a boolean', () => {
       expect( goodPasswordResult.result ).to.be.a( 'boolean' );
     });
 
     // Return Value
-     it( 'goodPasswordResult result should have value of true', () => {
+     it( 'goodPasswordResult.result should have value of true', () => {
       expect( goodPasswordResult.result ).to.equal( true );
     });
-
 
   });
 
@@ -1883,87 +1882,144 @@ describe( 'Update password', () => {
 
   });
 
+  // need test for bad uid.
+
 });
 
 describe( 'generate a QRcode and secret for 2a', () => {
 
-  let qrcodeResult;
+  describe( 'Generate for Bad UID.', () => {
 
-  function getSecret( next ) {
-    generatedSecret = accountModel.Update.generateQRcode( testAccountUID, ( result ) => {
-      qrcodeResult = result;
-      testAccount1_2ASecret = result.secret.base32;
-      next();
+    let qrcodeResult;
+
+    function getSecret( next ) {
+      generatedSecret = accountModel.Update.generateQRcode( badUID, ( result ) => {
+        qrcodeResult = result;
+        next();
+      });
+    }
+
+    before( ( done ) => getSecret( done ) );
+
+    after( done => done() );
+
+    // Property Exists
+    it( 'qrcodeResult should NOT have property data_url', () => {
+      expect( qrcodeResult ).to.not.have.property( 'data_url' );
     });
-  }
 
-  before( ( done ) => getSecret( done ) );
+    it( 'qrcodeResult should NOT have property secret', () => {
+      expect( qrcodeResult ).to.not.have.property( 'secret' );
+    });
 
-  after( done => done() );
+    it( 'qrcodeResult should have property msg', () => {
+      expect( qrcodeResult ).to.have.property( 'msg' );
+    });
 
-  // Property Exists
-  it( 'qrcodeResult should have property data_url', () => {
-    expect( qrcodeResult ).to.have.property( 'data_url' );
+    it( 'qrcodeResult should have property result', () => {
+      expect( qrcodeResult ).to.have.property( 'result' );
+    });
+
+    // Property Type
+    it( 'qrcodeResult.msg should be a string', () => {
+      expect( qrcodeResult.msg ).to.be.a( 'string' );
+    });
+
+    it( 'qrcodeResult.result should be a boolean', () => {
+      expect( qrcodeResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'qrcodeResult.msg should have value of updateGenericFail', () => {
+      expect( qrcodeResult.msg ).to.equal( errMsg.updateGenericFail );
+    });
+
+    it( 'qrcodeResult.result should have value of false', () => {
+      expect( qrcodeResult.result ).to.equal( false );
+    });
+
   });
 
-  it( 'qrcodeResult should have property result', () => {
-    expect( qrcodeResult ).to.have.property( 'result' );
-  });
+  describe( 'Generate for good UID.', () => {
 
-  it( 'qrcodeResult should have property secret', () => {
-    expect( qrcodeResult ).to.have.property( 'secret' );
-  });
+    let qrcodeResult;
 
-  it( 'qrcodeResult.secret should have property ascii', () => {
-    expect( qrcodeResult.secret ).to.have.property( 'ascii' );
-  });
+    function getSecret( next ) {
+      generatedSecret = accountModel.Update.generateQRcode( testAccountUID, ( result ) => {
+        qrcodeResult = result;
+        testAccount1_2ASecret = result.secret.base32;
+        next();
+      });
+    }
 
-  it( 'qrcodeResult.secret should have property hex', () => {
-    expect( qrcodeResult.secret ).to.have.property( 'hex' );
-  });
+    before( ( done ) => getSecret( done ) );
 
-  it( 'qrcodeResult.secret should have property base32', () => {
-    expect( qrcodeResult.secret ).to.have.property( 'base32' );
-  });
+    after( done => done() );
 
-  it( 'qrcodeResult.secret should have property otpauth_url', () => {
-    expect( qrcodeResult.secret ).to.have.property( 'otpauth_url' );
-  });
+    // Property Exists
+    it( 'qrcodeResult should have property data_url', () => {
+      expect( qrcodeResult ).to.have.property( 'data_url' );
+    });
 
-  // Property Type
-  it( 'qrcodeResult.data_url should be a string', () => {
-    expect( qrcodeResult.data_url ).to.be.a( 'string' );
-  });
+    it( 'qrcodeResult should have property result', () => {
+      expect( qrcodeResult ).to.have.property( 'result' );
+    });
 
-  it( 'qrcodeResult.secret should be an object', () => {
-    expect( qrcodeResult.secret ).to.be.a( 'object' );
-  });
+    it( 'qrcodeResult should have property secret', () => {
+      expect( qrcodeResult ).to.have.property( 'secret' );
+    });
 
-  it( 'qrcodeResult.secret.ascii should be a string', () => {
-    expect( qrcodeResult.secret.ascii ).to.be.a( 'string' );
-  });
+    it( 'qrcodeResult.secret should have property ascii', () => {
+      expect( qrcodeResult.secret ).to.have.property( 'ascii' );
+    });
 
-  it( 'qrcodeResult.secret.hex should be a string', () => {
-    expect( qrcodeResult.secret.hex ).to.be.a( 'string' );
-  });
+    it( 'qrcodeResult.secret should have property hex', () => {
+      expect( qrcodeResult.secret ).to.have.property( 'hex' );
+    });
 
-  it( 'qrcodeResult.secret.base32 should be a string', () => {
-    expect( qrcodeResult.secret.base32 ).to.be.a( 'string' );
-  });
+    it( 'qrcodeResult.secret should have property base32', () => {
+      expect( qrcodeResult.secret ).to.have.property( 'base32' );
+    });
 
-  it( 'qrcodeResult.secret.otpauth_url should be a string', () => {
-    expect( qrcodeResult.secret.otpauth_url ).to.be.a( 'string' );
-  });
+    it( 'qrcodeResult.secret should have property otpauth_url', () => {
+      expect( qrcodeResult.secret ).to.have.property( 'otpauth_url' );
+    });
 
-  it( 'qrcodeResult.result should be a boolean', () => {
-    expect( qrcodeResult.result ).to.be.a( 'boolean' );
-  });
+    // Property Type
+    it( 'qrcodeResult.data_url should be a string', () => {
+      expect( qrcodeResult.data_url ).to.be.a( 'string' );
+    });
 
-  // Return Value
-  it( 'qrcodeResult result should have value of true', () => {
-    expect( qrcodeResult.result ).to.equal( true );
-  });
+    it( 'qrcodeResult.secret should be an object', () => {
+      expect( qrcodeResult.secret ).to.be.a( 'object' );
+    });
 
+    it( 'qrcodeResult.secret.ascii should be a string', () => {
+      expect( qrcodeResult.secret.ascii ).to.be.a( 'string' );
+    });
+
+    it( 'qrcodeResult.secret.hex should be a string', () => {
+      expect( qrcodeResult.secret.hex ).to.be.a( 'string' );
+    });
+
+    it( 'qrcodeResult.secret.base32 should be a string', () => {
+      expect( qrcodeResult.secret.base32 ).to.be.a( 'string' );
+    });
+
+    it( 'qrcodeResult.secret.otpauth_url should be a string', () => {
+      expect( qrcodeResult.secret.otpauth_url ).to.be.a( 'string' );
+    });
+
+    it( 'qrcodeResult.result should be a boolean', () => {
+      expect( qrcodeResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'qrcodeResult result should have value of true', () => {
+      expect( qrcodeResult.result ).to.equal( true );
+    });
+
+  });
 
 });
 
@@ -2642,7 +2698,7 @@ describe('Delete account', () => {
 
   describe( 'Attempt to retrieve info from soft deleted account', () => {
 
-    describe( ' by ID', () => {
+    describe( 'by ID', () => {
 
       let getSoftDeletedAccountByIdResult;
 
@@ -2858,35 +2914,263 @@ describe('Delete account', () => {
 
     });
 
-    describe( '', () => {
+    describe( 'Update email', () => {
+
+      let updateEmailResult;
+
+      function updateEmail( next ) {
+          const email = 'deletedaccount@email.com';
+          accountModel.Update.email( testAccountUID, email, ( result ) => {
+            updateEmailResult = result;
+            next();
+          });
+      }
 
       before( ( done ) => {
-        done();
+        updateEmail( done );
       });
 
       after( done => done() );
 
-      // Property Exists
+      it( 'updateEmailResult should NOT have property error', () => {
+        expect( updateEmailResult ).to.not.have.property( 'error' );
+      });
+
+      it( 'updateEmailResult should have property msg', () => {
+        expect( updateEmailResult ).to.have.property( 'msg' );
+      });
+
+      it( 'updateEmailResult should have property result', () => {
+        expect( updateEmailResult ).to.have.property( 'result' );
+      });
 
       // Property Type
+      it( 'updateEmailResult should be an Object', () => {
+        expect( updateEmailResult ).to.be.a( 'Object' );
+      });
+
+      it( 'updateEmailResult.msg should be a string', () => {
+        expect( updateEmailResult.msg ).to.be.a( 'string' );
+      });
+
+      it( 'updateEmailResult.result should be a boolean', () => {
+        expect( updateEmailResult.result ).to.be.a( 'boolean' );
+      });
 
       // Return Value
+      it( 'updateEmailResult.msg should have value of errMsg.accountNotFound', () => {
+        expect( updateEmailResult.msg ).to.equal( errMsg.accountNotFound );
+      });
+
+      it( 'updateEmailResult.result should have value of false', () => {
+        expect( updateEmailResult.result ).to.equal( false );
+      });
 
     });
 
-    describe( '', () => {
+    describe( 'Update generateQRcode', () => {
+
+      let generateQRResult;
+
+      function getSecret( next ) {
+        generatedSecret = accountModel.Update.generateQRcode( testAccountUID, ( result ) => {
+          generateQRResult = result;
+          next();
+        });
+      }
+
+      before( ( done ) => getSecret( done ) );
+
+      after( done => done() );
+
+      // Property Exists
+      it( 'generateQRResult should NOT have property data_url', () => {
+        expect( generateQRResult ).to.not.have.property( 'data_url' );
+      });
+
+      it( 'generateQRResult should NOT have property secret', () => {
+        expect( generateQRResult ).to.not.have.property( 'secret' );
+      });
+
+      it( 'generateQRResult should have property msg', () => {
+        expect( generateQRResult ).to.have.property( 'msg' );
+      });
+
+      it( 'generateQRResult should have property result', () => {
+        expect( generateQRResult ).to.have.property( 'result' );
+      });
+
+      // Property Type
+      it( 'generateQRResult.msg should be a string', () => {
+        expect( generateQRResult.msg ).to.be.a( 'string' );
+      });
+
+      it( 'generateQRResult.result should be a boolean', () => {
+        expect( generateQRResult.result ).to.be.a( 'boolean' );
+      });
+
+      // Return Value
+      it( 'generateQRResult.msg should have value of updateGenericFail', () => {
+        expect( generateQRResult.msg ).to.equal( errMsg.updateGenericFail );
+      });
+
+      it( 'generateQRResult.result should have value of false', () => {
+        expect( generateQRResult.result ).to.equal( false );
+      });
+
+    });
+
+    describe( 'Update passphraseProved', () => {
+
+      let deletedAccount_PassphraseProvedResult;
+
+      function get_BadUID_PassphraseRecoveryProved ( next ) {
+        accountModel.Update.passphraseProved( testAccountUID, recoveryPhraseUser1, ( result ) => {
+          deletedAccount_PassphraseProvedResult = result;
+          next();
+        });
+      }
 
       before( ( done ) => {
-        done();
+        get_BadUID_PassphraseRecoveryProved( done );
       });
 
       after( done => done() );
 
       // Property Exists
+      it( 'deletedAccount_PassphraseProvedResult should have property result', () => {
+        expect( deletedAccount_PassphraseProvedResult ).to.have.property( 'result' );
+      });
+
+      it( 'deletedAccount_PassphraseProvedResult should have property msg', () => {
+        expect( deletedAccount_PassphraseProvedResult ).to.have.property( 'msg' );
+      });
 
       // Property Type
+      it( 'deletedAccount_PassphraseProvedResult.msg should be a string', () => {
+        expect( deletedAccount_PassphraseProvedResult.msg ).to.be.a( 'string' );
+      });
+
+      it( 'deletedAccount_PassphraseProvedResult.result should be a boolean', () => {
+        expect( deletedAccount_PassphraseProvedResult.result ).to.be.a( 'boolean' );
+      });
 
       // Return Value
+      it( 'deletedAccount_PassphraseProvedResult.msg should have value of errMsg.accountNotFound', () => {
+        expect( deletedAccount_PassphraseProvedResult.msg ).to.equal( errMsg.accountNotFound );
+      });
+
+      it( 'deletedAccount_PassphraseProvedResult.result should have value of false', () => {
+        expect( deletedAccount_PassphraseProvedResult.result ).to.equal( false );
+      });
+
+    });
+
+    describe( 'Update password', () => {
+
+      let deleteAccount_updatePasswordResult;
+      const passwordUpdated2 = 'xt2PUef^E';
+
+      function updatePass( next ) {
+        accountModel.Update.password( testAccountUID, passwordUpdated, passwordUpdated2, ( result ) => {
+          deleteAccount_updatePasswordResult = result;
+          next();
+        });
+      }
+
+      before( ( done ) => {
+        updatePass( done );
+      });
+
+      after( done => done() );
+
+      // Property Exists
+      it( 'deleteAccount_updatePasswordResult should NOT have property error', () => {
+        expect( deleteAccount_updatePasswordResult ).to.not.have.property( 'error' );
+      });
+
+      it( 'deleteAccount_updatePasswordResult should have property msg', () => {
+        expect( deleteAccount_updatePasswordResult ).to.have.property( 'msg' );
+      });
+
+      it( 'deleteAccount_updatePasswordResult should have property result', () => {
+        expect( deleteAccount_updatePasswordResult ).to.have.property( 'result' );
+      });
+
+      // Property Type
+      it( 'deleteAccount_updatePasswordResult should be an Object', () => {
+        expect( deleteAccount_updatePasswordResult ).to.be.a( 'Object' );
+      });
+
+      it( 'deleteAccount_updatePasswordResult.msg should be a string', () => {
+        expect( deleteAccount_updatePasswordResult.msg ).to.be.a( 'string' );
+      });
+
+      it( 'deleteAccount_updatePasswordResult.result should be a boolean', () => {
+        expect( deleteAccount_updatePasswordResult.result ).to.be.a( 'boolean' );
+      });
+
+      // Return Value
+      it( 'deleteAccount_updatePasswordResult.msg should have value of accountNotFound', () => {
+        expect( deleteAccount_updatePasswordResult.msg ).to.equal( errMsg.accountNotFound );
+      });
+
+       it( 'deleteAccount_updatePasswordResult.result should have value of false', () => {
+        expect( deleteAccount_updatePasswordResult.result ).to.equal( false );
+      });
+
+    });
+
+    describe( 'Update twoStep', () => {
+
+      let deleteAccount_twoStepResult;
+      const twoA = true;
+
+      function updateTwoA( next ) {
+        const token = authenticator.generate( testAccount1_2ASecret );
+
+        accountModel.Update.twoStep( testAccountUID, token, twoA, ( result ) => {
+          deleteAccount_twoStepResult = result;
+          next();
+        })
+      }
+
+      before( ( done ) => {
+        updateTwoA( done );
+      });
+
+      after( done => done() );
+
+      // Property Exists
+      it( 'deleteAccount_twoStepResult should NOT have property error', () => {
+        expect( deleteAccount_twoStepResult ).to.not.have.property( 'error' );
+      });
+
+      it( 'deleteAccount_twoStepResult should have property msg', () => {
+        expect( deleteAccount_twoStepResult ).to.have.property( 'msg' );
+      });
+
+      it( 'deleteAccount_twoStepResult should have property result', () => {
+        expect( deleteAccount_twoStepResult ).to.have.property( 'result' );
+      });
+
+      // Property Type
+      it( 'deleteAccount_twoStepResult.msg should be a string', () => {
+        expect( deleteAccount_twoStepResult.msg ).to.be.a( 'string' );
+      });
+
+      it( 'deleteAccount_twoStepResult.result should be a boolean', () => {
+        expect( deleteAccount_twoStepResult.result ).to.be.a( 'boolean' );
+      });
+
+      // Return Value
+      it( 'deleteAccount_twoStepResult.msg should have value of accountNotFound', () => {
+        expect( deleteAccount_twoStepResult.msg ).to.equal( errMsg.accountNotFound );
+      });
+
+      it( 'deleteAccount_twoStepResult.result should have value of true', () => {
+        expect( deleteAccount_twoStepResult.result ).to.equal( false );
+      });
 
     });
 

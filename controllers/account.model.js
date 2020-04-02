@@ -17,7 +17,7 @@ const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
 //const collection = db.collection(process.env.BUCKET);
 // console.log(N1qlQuery);
 
-// TODO: Two step and add secret for recovery.
+// TODO: Add undelete account fn
 // TODO: ADD Regex to validatePassword
 
 const accountModel = {
@@ -189,27 +189,8 @@ const accountModel = {
                 next({ "msg": errMsg.roleInvalid, "result": false });
             }
         },
-        recoveryPhrase: ( uid, next ) => {
-            const q = N1qlQuery.fromString('SELECT `recoveryPhrase` FROM `' + process.env.BUCKET +
-            '` WHERE _type == "account" AND _id == "' + uid + '" ');
-            db.query(q, (e, r) => {
-                if(e){
-                    console.log('error in accountModel.Read.accountById');
-                    console.log(e);
-                    next({ "msg": e, "result": false});
-                }else{
-                    if( r.length === 1 ) {
-                        next({ "data": r[0], "result": true });
-                    } else if( r.length === 0 ) {
-                        next({ "msg": errMsg.accountNotFound, "result": false });
-                    } else {
-                        next({ "msg": 'Unexpected result', "result": false });
-                    }
-                }
-            });
-        },
         validateAccount: ( uid, password, ips, twoAtoken, next ) => {
-          accountMethod.getUserById( uid, ( account ) => {
+          accountMethod.getUserById( uid, true, ( account ) => {
             if( account.result ) {
               const twoAResult = ( account.data.enable2a ) ? accountMethod.validate2a( account.data.secret, twoAtoken ) : true;
               if( twoAResult ) {
@@ -261,7 +242,7 @@ const accountModel = {
                 } else {
                     const q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
                     '` SET email = "' + email + '" WHERE _type == "account" AND _id == "' +
-                    uid + '" ');
+                    uid + '" AND `deleted` == false ');
                     db.query(q, function(e, r, m) {
                         if(e){
                             console.log('error in accountModel.Update.email');
@@ -314,7 +295,7 @@ const accountModel = {
                         if( result ) {
                           let qU = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
                           '` SET `recoveryPhraseProved` = true WHERE _type == "account" AND _id == "' +
-                          uid + '" ');
+                          uid + '" AND `deleted` == false ');
                           db.query(qU, function(e, r, m) {
                               if(e){
                                   console.log('error in accountModel.Update.passphraseProved');
@@ -346,7 +327,7 @@ const accountModel = {
         },
         password: ( uid, oldPassword, newPassword, next ) => {
             if( accountMethod.validatePassword( newPassword ) ) {
-                accountMethod.getUserById( uid, ( account ) => {
+                accountMethod.getUserById( uid, false, ( account ) => {
                     if( account.result ) {
                         accountMethod.passwordCompare( oldPassword, account.data.password, ( compareResult ) => {
                             if( compareResult ) {
@@ -413,7 +394,7 @@ const accountModel = {
             }
         },
         twoStep: ( uid, token, twoA, next ) => {
-            accountMethod.getUserById( uid, ( account ) => {
+            accountMethod.getUserById( uid, false, ( account ) => {
                 if( account.result ){
                     if( account.data.recoveryPhraseProved ) {
                         if( account.data.enable2a != twoA && account.data.enable2a ) {
@@ -488,9 +469,12 @@ const accountMethod = {
         ];
         return ( nameList.indexOf( username ) > -1 );
     },
-    getUserById: ( uid, next ) => {
-        const q = N1qlQuery.fromString('SELECT ' + fields + ', `enable2a`, `password`, `secret`, `recoveryPhrase`, `recoveryPhraseProved` FROM `' + process.env.BUCKET + '` WHERE _type == "account" AND _id == "'
-        + uid + '"');
+    getUserById: ( uid, allowDeleted, next ) => {
+      let query = 'SELECT ' + fields + ', `enable2a`, `password`, `secret`, `recoveryPhrase`, `recoveryPhraseProved` FROM `' + process.env.BUCKET + '` WHERE _type == "account" AND _id == "'
+      + uid + '" ';
+      if( !allowDeleted ) query += ' AND `deleted` == false ';
+
+      const q = N1qlQuery.fromString(query);
         db.query(q, function(e, r) {
           if(e){
             console.log('error in accountMethod.getUserById');
@@ -561,7 +545,7 @@ const accountMethod = {
     },
     saveQR: ( uid, secret, next ) => {
       const qU = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
-      '` SET secret = "' + secret + '" WHERE _type == "account" AND _id == "' + uid + '" ');
+      '` SET secret = "' + secret + '" WHERE _type == "account" AND _id == "' + uid + '" AND `deleted` == false ');
       db.query(qU, function(e, r, m) {
           if(e){
               console.log('error in accountMethod.saveQR');
