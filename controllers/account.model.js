@@ -19,6 +19,7 @@ const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
 
 // TODO: Add undelete account fn
 // TODO: ADD Regex to validatePassword
+// TODO: Add bad Login and Recovery Phrase Count
 
 const accountModel = {
     Create: {
@@ -212,9 +213,6 @@ const accountModel = {
             }
           });
         },
-        verifyPassphrase: ( uid, phrase, next ) => {
-
-        },
         verifyToken: ( token, next ) => {
           jwt.verify( token, process.env.JWT_SECRET, ( e, decoded ) => {
             if( e ) {
@@ -361,6 +359,33 @@ const accountModel = {
             } else {
                 next({ "msg": errMsg.passwordTooShort, "result": false });
             }
+        },
+        recoverAccount: ( username, recoveryPhrase, next ) => {
+          const q = N1qlQuery.fromString('SELECT `recoveryPhrase`, `_id` FROM `' + process.env.BUCKET + '` WHERE _type == "account" AND `username` == "' + username + '" ');
+          db.query(q, function(e, r) {
+            if(e){
+              console.log('error in accountMethod.recoverAccount');
+              console.log(e);
+              next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+            }else{
+              if( r.length === 1){
+                accountMethod.passwordCompare( recoveryPhrase, r[0].recoveryPhrase, ( result ) => {
+                  if( result ) {
+                    accountMethod.update2a( r[0]._id, false, ( update2aResult ) => {
+                      if( update2aResult.result )
+                        next({ "result": true });
+                      else
+                        next({ "msg": errMsg.recoveryFailed, "result": false });
+                    });
+                  } else {
+                    next({ "msg": errMsg.recoveryFailed, "result": false });
+                  }
+                });
+              } else {
+                next({ "msg": errMsg.recoveryFailed, "result": false });
+              }
+            }
+          });
         },
         role: ( uid, role, next ) => {
             if( accountMethod.roleExists( role ) ) {

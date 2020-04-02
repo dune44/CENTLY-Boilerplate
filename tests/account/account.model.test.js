@@ -2561,7 +2561,6 @@ describe( 'Login with 2A', () => {
             console.log( );
             console.log( 'testAccount1_2ASecret' );
             console.log( testAccount1_2ASecret );
-
           }
           next();
         });
@@ -3182,33 +3181,133 @@ describe( 'Recover Account', () => {
 
   describe( 'Attempt recovery with bad passphrase.', () => {
 
-      before( done => {
-        done();
+    let badPhrase_recoveryPhraseResult;
+    const badPhrase = '0000000000000000';
+
+    function recoverAccount( next ) {
+      accountModel.Update.recoverAccount( username, badPhrase, ( result ) => {
+        badPhrase_recoveryPhraseResult = result;
+        next();
       });
+    }
 
-      after( done => done() );
+    before( done => {
+      recoverAccount( done );
+    });
 
-      // Property Exists
+    after( done => done() );
 
-      // Property Type
+    // Property Exists
+    it( 'badPhrase_recoveryPhraseResult should have property msg', () => {
+      expect( badPhrase_recoveryPhraseResult ).to.have.property( 'msg' );
+    });
 
-      // Return Value
+    it( 'badPhrase_recoveryPhraseResult should have property result', () => {
+      expect( badPhrase_recoveryPhraseResult ).to.have.property( 'result' );
+    });
+
+    // Property Type
+    it( 'badPhrase_recoveryPhraseResult.msg should be a string', () => {
+      expect( badPhrase_recoveryPhraseResult.msg ).to.be.a( 'string' );
+    });
+
+    it( 'badPhrase_recoveryPhraseResult.result should be a boolean', () => {
+      expect( badPhrase_recoveryPhraseResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'badPhrase_recoveryPhraseResult result should have value of recoveryFailed', () => {
+      expect( badPhrase_recoveryPhraseResult.msg ).to.equal( errMsg.recoveryFailed );
+    });
+
+    it( 'badPhrase_recoveryPhraseResult.result should have value of false', () => {
+      expect( badPhrase_recoveryPhraseResult.result ).to.equal( false );
+    });
+
+  });
+
+  describe( 'Attempt recovery with bad username.', () => {
+
+    let badUser_recoveryPhraseResult;
+    const badUsername = 'badTestUser';
+
+    function recoverAccount( next ) {
+      accountModel.Update.recoverAccount( badUsername, 'anything', ( result ) => {
+        badUser_recoveryPhraseResult = result;
+        next();
+      });
+    }
+
+    before( done => {
+      recoverAccount( done );
+    });
+
+    after( done => done() );
+
+    // Property Exists
+    it( 'badUser_recoveryPhraseResult should have property msg', () => {
+      expect( badUser_recoveryPhraseResult ).to.have.property( 'msg' );
+    });
+
+    it( 'badUser_recoveryPhraseResult should have property result', () => {
+      expect( badUser_recoveryPhraseResult ).to.have.property( 'result' );
+    });
+
+    // Property Type
+    it( 'badUser_recoveryPhraseResult.msg should be a string', () => {
+      expect( badUser_recoveryPhraseResult.msg ).to.be.a( 'string' );
+    });
+
+    it( 'badUser_recoveryPhraseResult.result should be a boolean', () => {
+      expect( badUser_recoveryPhraseResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'badUser_recoveryPhraseResult result should have value of recoveryFailed', () => {
+      expect( badUser_recoveryPhraseResult.msg ).to.equal( errMsg.recoveryFailed );
+    });
+
+    it( 'badUser_recoveryPhraseResult.result should have value of false', () => {
+      expect( badUser_recoveryPhraseResult.result ).to.equal( false );
+    });
 
   });
 
   describe( 'Recover account with good passphrase.', () => {
 
-      before( ( done ) => {
-        done();
+    let good_recoveryPhraseResult;
+
+    function recoverAccount( next ) {
+      accountModel.Update.recoverAccount( username, recoveryPhraseUser1, ( result ) => {
+        good_recoveryPhraseResult = result;
+        next();
       });
+    }
 
-      after( done => done() );
+    before( ( done ) => {
+      recoverAccount( done );
+    });
 
-      // Property Exists
+    after( done => done() );
 
-      // Property Type
+    // Property Exists
+    it( 'good_recoveryPhraseResult should NOT have property msg', () => {
+      expect( good_recoveryPhraseResult ).to.not.have.property( 'msg' );
+    });
 
-      // Return Value
+    it( 'good_recoveryPhraseResult should have property result', () => {
+      expect( good_recoveryPhraseResult ).to.have.property( 'result' );
+    });
+
+    // Property Type
+    it( 'good_recoveryPhraseResult.result should be a boolean', () => {
+      expect( good_recoveryPhraseResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'good_recoveryPhraseResult.result should have value of true', () => {
+      expect( good_recoveryPhraseResult.result ).to.equal( true );
+    });
 
   });
 
