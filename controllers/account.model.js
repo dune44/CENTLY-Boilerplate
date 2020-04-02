@@ -63,7 +63,7 @@ const accountModel = {
     Read: {
         accountById: ( uid, next ) => {
             const q = N1qlQuery.fromString('SELECT ' +  fields + ' FROM `' + process.env.BUCKET +
-            '` WHERE _type == "account" AND _id == "' + uid + '" ');
+            '` WHERE _type == "account" AND _id == "' + uid + '" AND `deleted` == false ');
             db.query(q, (e, r) => {
                 if(e){
                     console.log('error in accountModel.Read.accountById');
@@ -82,7 +82,7 @@ const accountModel = {
         },
         accountByUsername: ( username, next ) => {
             const q = N1qlQuery.fromString('SELECT '+fields+' FROM `' + process.env.BUCKET +
-            '` WHERE _type == "account" AND `username` == "' + username + '"');
+            '` WHERE _type == "account" AND `username` == "' + username + '" AND `deleted` == false ');
             db.query(q, function(e, r) {
                 if(e){
                     console.log('error in accountModel.Read.accountByUsername');
@@ -92,8 +92,8 @@ const accountModel = {
                     if ( r.length === 1 ) {
                         next({ "data": r[0], "result": true });
                     } else if (r.length === 0) {
-                        const msg = 'Result not found for ' + username;
-                        next({ "msg": msg, "result": false });
+                        // const msg = 'Result not found for ' + username;
+                        next({ "msg": errMsg.accountNotFound, "result": false });
                     } else {
                         const msg = 'There is a duplicate found for ' + username;
                         next({ "msg": msg, "result": false });
@@ -104,7 +104,7 @@ const accountModel = {
         },
         all: ( next ) => {
           const q = N1qlQuery.fromString('SELECT '+fields+' FROM `' + process.env.BUCKET +
-          '` WHERE _type == "account" ');
+          '` WHERE _type == "account" AND `deleted` == false ');
           db.query(q, function(e, r) {
               if(e){
                   console.log('error in accountModel.Read.all');
@@ -128,7 +128,7 @@ const accountModel = {
           }
           let q = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
           '` SET `recoveryPhrase` = $1 WHERE _type == "account" AND _id == "' +
-          uid + '" ');
+          uid + '" AND `deleted` == false ');
           accountMethod.ink( phrase, ( hash, inkMsg ) => {
             db.query(q, [hash], function(e, r, m) {
               if(e){

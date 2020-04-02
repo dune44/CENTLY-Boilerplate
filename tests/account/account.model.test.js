@@ -8,7 +8,6 @@ const expect = chai.expect;
 const N1qlQuery = couchbase.N1qlQuery;
 const roles = require('./../../config/roles');
 const { v4: uuidv4 } = require('uuid');
-
 chai.use(dirtyChai);
 
 /*
@@ -662,15 +661,11 @@ describe( 'Account Model Read accountByUsername', () => {
 
     // Return Value
 
-    it( 'readBadUsernameAccountResult msg should NOT have result of badMsg_ReadBadUsernameAccount: ' + badMsg_ReadBadUsernameAccount, () => {
-        expect( readBadUsernameAccountResult.msg ).to.not.equal( badMsg_ReadBadUsernameAccount );
+    it( 'readBadUsernameAccountResult.msg should have result of var accountNotFound', () => {
+        expect( readBadUsernameAccountResult.msg ).to.equal( errMsg.accountNotFound );
     });
 
-    it( 'readBadUsernameAccountResult msg should have result of msgReadBadUsernameAccountResult: ' + msgReadBadUsernameAccountResult, () => {
-        expect( readBadUsernameAccountResult.msg ).to.equal( msgReadBadUsernameAccountResult );
-    });
-
-    it( 'readBadUsernameAccountResult result should have result of false', () => {
+    it( 'readBadUsernameAccountResult.result should have result of false', () => {
         expect( readBadUsernameAccountResult.result ).to.equal( false );
     });
 
@@ -2001,6 +1996,51 @@ describe( 'Process the recovery phrase.', () => {
 
   });
 
+  describe( 'Generate phrase with bad ID', () => {
+
+    let badId_getRecoveryPhraseResult;
+    function getRecoveryPhrase( next ) {
+      accountModel.Read.passphrase( badUID, ( phrase ) => {
+        badId_getRecoveryPhraseResult = phrase;
+        next();
+      });
+    }
+
+    before( ( done ) => {
+      getRecoveryPhrase( done );
+    });
+
+    after( done => done() );
+
+    // Property Exists
+    it( 'badId_getRecoveryPhraseResult should have property result', () => {
+      expect( badId_getRecoveryPhraseResult ).to.have.property( 'result' );
+    });
+
+    it( 'badId_getRecoveryPhraseResult should have property msg', () => {
+      expect( badId_getRecoveryPhraseResult ).to.have.property( 'msg' );
+    });
+
+    // Property Type
+    it( 'badId_getRecoveryPhraseResult.msg should be a string', () => {
+      expect( badId_getRecoveryPhraseResult.msg ).to.be.a( 'string' );
+    });
+
+    it( 'badId_getRecoveryPhraseResult.result should be a boolean', () => {
+      expect( badId_getRecoveryPhraseResult.result ).to.be.a( 'boolean' );
+    });
+
+    // Return Value
+    it( 'badId_getRecoveryPhraseResult.msg should have value of updateGenericFail', () => {
+      expect( badId_getRecoveryPhraseResult.msg ).to.equal( errMsg.updateGenericFail );
+    });
+
+    it( 'badId_getRecoveryPhraseResult.result should have value of false', () => {
+      expect( badId_getRecoveryPhraseResult.result ).to.equal( false );
+    });
+
+  });
+
   describe( 'Validate User has phrase correct', () => {
 
     let goodPassphraseProvedResult;
@@ -2542,16 +2582,20 @@ describe('Delete account', () => {
     });
 
     // Property Type
-    it( 'badID_deleteAccountResult result should be a boolean', () => {
-      expect( badID_deleteAccountResult.result ).to.be.a( 'boolean' );
-    });
-
-    it( 'badID_deleteAccountResult msg should be a string', () => {
+    it( 'badID_deleteAccountResult.msg should be a string', () => {
       expect( badID_deleteAccountResult.msg ).to.be.a( 'string' );
     });
 
+    it( 'badID_deleteAccountResult.result should be a boolean', () => {
+      expect( badID_deleteAccountResult.result ).to.be.a( 'boolean' );
+    });
+
     // Return Value
-    it( 'badID_deleteAccountResult result should have value of false', () => {
+    it( 'badID_deleteAccountResult.msg should have value of accountNotFound', () => {
+      expect( badID_deleteAccountResult.msg ).to.equal( errMsg.accountNotFound );
+    });
+
+    it( 'badID_deleteAccountResult.result should have value of false', () => {
       expect( badID_deleteAccountResult.result ).to.equal( false );
     });
 
@@ -2585,13 +2629,265 @@ describe('Delete account', () => {
     });
 
     // Property Type
-    it( 'good_deleteAccountResult result should be a boolean', () => {
+    it( 'good_deleteAccountResult.result should be a boolean', () => {
       expect( good_deleteAccountResult.result ).to.be.a( 'boolean' );
     });
 
     // Return Value
-    it( 'good_deleteAccountResult result should have value of false', () => {
+    it( 'good_deleteAccountResult.result should have value of true', () => {
       expect( good_deleteAccountResult.result ).to.equal( true );
+    });
+
+  });
+
+  describe( 'Attempt to retrieve info from soft deleted account', () => {
+
+    describe( ' by ID', () => {
+
+      let getSoftDeletedAccountByIdResult;
+
+      function getSoftDeletedAccount( next ) {
+        accountModel.Read.accountById( testAccountUID, ( result ) => {
+          getSoftDeletedAccountByIdResult = result;
+          next();
+        });
+      }
+
+      before( ( done ) => {
+        getSoftDeletedAccount( done );
+      });
+
+      after( done => done() );
+
+      // Property Exists
+      it( 'getSoftDeletedAccountByIdResult should have property msg', () => {
+        expect( getSoftDeletedAccountByIdResult ).to.have.property( 'msg' );
+      });
+
+      it( 'getSoftDeletedAccountByIdResult should have property result', () => {
+        expect( getSoftDeletedAccountByIdResult ).to.have.property( 'result' );
+      });
+
+      // Property Type
+      it( 'getSoftDeletedAccountByIdResult.msg should be a string', () => {
+        expect( getSoftDeletedAccountByIdResult.msg ).to.be.a( 'string' );
+      });
+
+      it( 'getSoftDeletedAccountByIdResult.result should be a boolean', () => {
+        expect( getSoftDeletedAccountByIdResult.result ).to.be.a( 'boolean' );
+      });
+
+      // Return Value
+      it( 'getSoftDeletedAccountByIdResult.msg should have value of accountNotFound', () => {
+        expect( getSoftDeletedAccountByIdResult.msg ).to.equal( errMsg.accountNotFound );
+      });
+
+      it( 'getSoftDeletedAccountByIdResult.result should have value of false', () => {
+        expect( getSoftDeletedAccountByIdResult.result ).to.equal( false );
+      });
+
+    });
+
+    describe( 'by Username', () => {
+
+      let getSoftDeletedAccountByUsernameResult;
+
+      function getSoftDeletedAccount( next ) {
+        accountModel.Read.accountByUsername( username, ( result ) => {
+          getSoftDeletedAccountByUsernameResult = result;
+          next();
+        });
+      }
+
+      before( ( done ) => {
+        getSoftDeletedAccount( done );
+      });
+
+      after( done => done() );
+
+      // Property Exists
+      it( 'getSoftDeletedAccountByUsernameResult should have property msg', () => {
+        expect( getSoftDeletedAccountByUsernameResult ).to.have.property( 'msg' );
+      });
+
+      it( 'getSoftDeletedAccountByUsernameResult should have property result', () => {
+        expect( getSoftDeletedAccountByUsernameResult ).to.have.property( 'result' );
+      });
+
+      // Property Type
+      it( 'getSoftDeletedAccountByUsernameResult.msg should be a string', () => {
+        expect( getSoftDeletedAccountByUsernameResult.msg ).to.be.a( 'string' );
+      });
+
+      it( 'getSoftDeletedAccountByUsernameResult.result should be a boolean', () => {
+        expect( getSoftDeletedAccountByUsernameResult.result ).to.be.a( 'boolean' );
+      });
+
+      // Return Value
+      it( 'getSoftDeletedAccountByUsernameResult.msg should have value of accountNotFound', () => {
+        expect( getSoftDeletedAccountByUsernameResult.msg ).to.equal( errMsg.accountNotFound );
+      });
+
+      it( 'getSoftDeletedAccountByUsernameResult.result should have value of false', () => {
+        expect( getSoftDeletedAccountByUsernameResult.result ).to.equal( false );
+      });
+
+    });
+
+    describe( 'All', () => {
+
+      let allAccountsResult;
+
+      function getAllAccount( next ) {
+        accountModel.Read.all( ( result ) => {
+          allAccountsResult = result;
+          next();
+        });
+      }
+
+      before( ( done ) => {
+        getAllAccount( done );
+      });
+
+      after( done => done() );
+
+      // Property Exists
+      it( 'allAccountsResult should have property data', () => {
+        expect( allAccountsResult ).to.have.property( 'data' );
+      });
+
+      it( 'allAccountsResult should have property result', () => {
+        expect( allAccountsResult ).to.have.property( 'result' );
+      });
+
+      // Property Type
+      it( 'allAccountsResult.data should be an array', () => {
+        expect( allAccountsResult.data ).to.be.a( 'array' );
+      });
+
+      it( 'allAccountsResult.result should be a boolean', () => {
+        expect( allAccountsResult.result ).to.be.a( 'boolean' );
+      });
+
+      // Return Value
+      it( 'allAccountsResult.data should have length of 1', () => {
+        expect( allAccountsResult.data ).to.be.length( 1 );
+      });
+
+      it( 'allAccountsResult.result should have value of true', () => {
+        expect( allAccountsResult.result ).to.equal( true );
+      });
+
+    });
+
+    describe( 'Read passphrase', () => {
+
+      let recoveryPhraseResult;
+
+      function getRecoveryPhrase( next ) {
+        accountModel.Read.passphrase( testAccountUID, ( phrase ) => {
+          recoveryPhraseResult = phrase;
+          next();
+        });
+      }
+
+      before( ( done ) => {
+        getRecoveryPhrase( done );
+      });
+
+      after( done => done() );
+
+      // Property Exists
+      it( 'recoveryPhraseResult should have property result', () => {
+        expect( recoveryPhraseResult ).to.have.property( 'result' );
+      });
+
+      it( 'recoveryPhraseResult should have property msg', () => {
+        expect( recoveryPhraseResult ).to.have.property( 'msg' );
+      });
+
+      // Property Type
+      it( 'recoveryPhraseResult.msg should be a string', () => {
+        expect( recoveryPhraseResult.msg ).to.be.a( 'string' );
+      });
+
+      it( 'recoveryPhraseResult.result should be a boolean', () => {
+        expect( recoveryPhraseResult.result ).to.be.a( 'boolean' );
+      });
+
+      // Return Value
+      it( 'recoveryPhraseResult.msg should have value of updateGenericFail', () => {
+        expect( recoveryPhraseResult.msg ).to.equal( errMsg.updateGenericFail );
+      });
+
+      it( 'recoveryPhraseResult.result should have value of false', () => {
+        expect( recoveryPhraseResult.result ).to.equal( false );
+      });
+
+    });
+
+    describe( 'rolesById', () => {
+
+      before( ( done ) => {
+        done();
+      });
+
+      after( done => done() );
+
+      // Property Exists
+
+      // Property Type
+
+      // Return Value
+
+    });
+
+    describe( 'isInRole', () => {
+
+      before( ( done ) => {
+        done();
+      });
+
+      after( done => done() );
+
+      // Property Exists
+
+      // Property Type
+
+      // Return Value
+
+    });
+
+    describe( '', () => {
+
+      before( ( done ) => {
+        done();
+      });
+
+      after( done => done() );
+
+      // Property Exists
+
+      // Property Type
+
+      // Return Value
+
+    });
+
+    describe( '', () => {
+
+      before( ( done ) => {
+        done();
+      });
+
+      after( done => done() );
+
+      // Property Exists
+
+      // Property Type
+
+      // Return Value
+
     });
 
   });
@@ -2638,6 +2934,7 @@ describe( 'Forgot password.', () => {
 
     before( done => {
       done();
+
     });
 
     after( done => done() );
