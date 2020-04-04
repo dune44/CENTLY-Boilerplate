@@ -20,10 +20,11 @@ const fields = '_id, _type, `blocked`, `deleted`, `email`, `username`';
 // TODO: Add undelete account fn
 // TODO: ADD Regex to validatePassword
 // TODO: Add bad Login and Recovery Phrase Count
+// TODO: Reset password
 
 const accountModel = {
     Create: {
-        account: ( account, next ) => {
+      account: ( account, next ) => {
             if( !accountMethod.disallowedName( account.username ) ) {
                 accountMethod.duplicateName( account.username, ( duplicate ) => {
                     if( !duplicate ) {
@@ -62,7 +63,7 @@ const accountModel = {
         }
     },
     Read: {
-        accountById: ( uid, next ) => {
+      accountById: ( uid, next ) => {
             const q = N1qlQuery.fromString('SELECT ' +  fields + ' FROM `' + process.env.BUCKET +
             '` WHERE _type == "account" AND _id == "' + uid + '" AND `deleted` == false ');
             db.query(q, (e, r) => {
@@ -81,7 +82,7 @@ const accountModel = {
                 }
             });
         },
-        accountByUsername: ( username, next ) => {
+      accountByUsername: ( username, next ) => {
             const q = N1qlQuery.fromString('SELECT '+fields+' FROM `' + process.env.BUCKET +
             '` WHERE _type == "account" AND `username` == "' + username + '" AND `deleted` == false ');
             db.query(q, function(e, r) {
@@ -103,7 +104,7 @@ const accountModel = {
                 }
             });
         },
-        all: ( next ) => {
+      all: ( next ) => {
           const q = N1qlQuery.fromString('SELECT '+fields+' FROM `' + process.env.BUCKET +
           '` WHERE _type == "account" AND `deleted` == false ');
           db.query(q, function(e, r) {
@@ -121,7 +122,7 @@ const accountModel = {
               }
           });
         },
-        passphrase: ( uid, next ) => {
+      passphrase: ( uid, next ) => {
           const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`!@#$%^&*-_.';
           let phrase = '';
           for (var i = 0; i < 32; i++) {
@@ -145,7 +146,7 @@ const accountModel = {
             });
           });
         },
-        rolesById: ( uid, next)  => {
+      rolesById: ( uid, next)  => {
             const q = N1qlQuery.fromString('SELECT _id, `roles` FROM `' + process.env.BUCKET +
             '` WHERE _type == "account" AND _id == "' + uid + '" ');
             db.query(q, (e, r) => {
@@ -165,7 +166,7 @@ const accountModel = {
                 }
             });
         },
-        isInRole: ( uid, role, next ) => {
+      isInRole: ( uid, role, next ) => {
             if( accountMethod.roleExists( role ) ) {
                 const q = N1qlQuery.fromString('SELECT `roles` FROM `' + process.env.BUCKET +
                 '` WHERE _type == "account" AND _id == "' + uid + '" ');
@@ -190,30 +191,30 @@ const accountModel = {
                 next({ "msg": errMsg.roleInvalid, "result": false });
             }
         },
-        validateAccount: ( uid, password, ips, twoAtoken, next ) => {
-          accountMethod.getUserById( uid, true, ( account ) => {
-            if( account.result ) {
-              const twoAResult = ( account.data.enable2a ) ? accountMethod.validate2a( account.data.secret, twoAtoken ) : true;
-              if( twoAResult ) {
-                accountMethod.passwordCompare( password, account.data.password, ( result ) => {
-                  if( result ){
-                    accountMethod.updateToken( uid, ips, ( token ) => {
-                      next({ "result": result, "token": token });
-                    });
-                  } else {
-                    next({ "msg": errMsg.accountValidationFailure, "result": false });
-                  }
-                });
-              } else {
-                console.log( 'enable2a ' + account.data.enable2a );
-                next({ "msg": errMsg.accountValidationFailure, "result": false });
-              }
+      validateAccount: ( username, password, ips, twoAtoken, next ) => {
+        accountMethod.getAccountByUsername( username, true, ( account ) => {
+          if( account.result ) {
+            const twoAResult = ( account.data.enable2a ) ? accountMethod.validate2a( account.data.secret, twoAtoken ) : true;
+            if( twoAResult ) {
+              accountMethod.passwordCompare( password, account.data.password, ( result ) => {
+                if( result ){
+                  accountMethod.updateToken( account.data._id, ips, ( token ) => {
+                    next({ "result": result, "token": token });
+                  });
+                } else {
+                  next({ "msg": errMsg.accountValidationFailure, "result": false });
+                }
+              });
             } else {
-              next( account );
+              console.log( 'enable2a ' + account.data.enable2a );
+              next({ "msg": errMsg.accountValidationFailure, "result": false });
             }
-          });
-        },
-        verifyToken: ( token, next ) => {
+          } else {
+            next( account );
+          }
+        });
+      },
+      verifyToken: ( token, next ) => {
           jwt.verify( token, process.env.JWT_SECRET, ( e, decoded ) => {
             if( e ) {
               console.log('error in accountModel.Read.verifyToken');
@@ -233,7 +234,7 @@ const accountModel = {
         }
     },
     Update: {
-        email: ( uid, email, next ) => {
+      email: ( uid, email, next ) => {
             if( email ) {
                 if( !accountMethod.validateEmail( email ) ) {
                     next({ "msg": errMsg.emailInvalid, "result": false });
@@ -263,7 +264,7 @@ const accountModel = {
                 next({ "msg": 'Email cannot be blank', "result": false});
             }
         },
-        generateQRcode: ( uid, next ) => {
+      generateQRcode: ( uid, next ) => {
           const secret = speakeasy.generateSecret();
           QRCode.toDataURL(secret.otpauth_url, function(e, data_url) {
             if( e ) {
@@ -279,7 +280,7 @@ const accountModel = {
             }
           });
         },
-        passphraseProved: ( uid, phrase, next ) => {
+      passphraseProved: ( uid, phrase, next ) => {
           const qR = N1qlQuery.fromString('SELECT `recoveryPhrase` FROM `' + process.env.BUCKET +
           '` WHERE _type == "account" AND _id == "' + uid + '" ');
           db.query( qR, ( e, r ) => {
@@ -323,7 +324,7 @@ const accountModel = {
               }
           });
         },
-        password: ( uid, oldPassword, newPassword, next ) => {
+      password: ( uid, oldPassword, newPassword, next ) => {
             if( accountMethod.validatePassword( newPassword ) ) {
                 accountMethod.getUserById( uid, false, ( account ) => {
                     if( account.result ) {
@@ -360,7 +361,7 @@ const accountModel = {
                 next({ "msg": errMsg.passwordTooShort, "result": false });
             }
         },
-        recoverAccount: ( username, recoveryPhrase, next ) => {
+      recoverAccount: ( username, recoveryPhrase, next ) => {
           const q = N1qlQuery.fromString('SELECT `recoveryPhrase`, `_id` FROM `' + process.env.BUCKET + '` WHERE _type == "account" AND `username` == "' + username + '" ');
           db.query(q, function(e, r) {
             if(e){
@@ -387,7 +388,7 @@ const accountModel = {
             }
           });
         },
-        role: ( uid, role, next ) => {
+      role: ( uid, role, next ) => {
             if( accountMethod.roleExists( role ) ) {
                 accountModel.Read.accountById( uid, ( acct ) => {
                     if( acct.result ) {
@@ -418,7 +419,7 @@ const accountModel = {
                 next({ "msg": errMsg.roleInvalid, "result": false });
             }
         },
-        twoStep: ( uid, token, twoA, next ) => {
+      twoStep: ( uid, token, twoA, next ) => {
             accountMethod.getUserById( uid, false, ( account ) => {
                 if( account.result ){
                     if( account.data.recoveryPhraseProved ) {
@@ -449,11 +450,11 @@ const accountModel = {
         }
     },
     Delete: {
-        accountSoftly: ( uid, password, ips, twoAtoken, next) => {
-          accountModel.Read.validateAccount( uid, password, ips, twoAtoken, ( result ) => {
+      accountSoftly: ( username, password, ips, twoAtoken, next) => {
+          accountModel.Read.validateAccount( username, password, ips, twoAtoken, ( result ) => {
             if( result.result ) {
               const qU = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
-              '` SET deleted = true WHERE _type == "account" AND _id == "' + uid + '" ');
+              '` SET deleted = true WHERE _type == "account" AND `username` == "' + username + '" ');
               db.query(qU, function(e, r, m) {
                 if(e){
                   console.log('error in accountModel.Delete.accountSoftly');
@@ -472,7 +473,7 @@ const accountModel = {
             }
           });
         },
-        accountHard: ( uid, password, token, next) => {
+      accountHard: ( uid, password, token, next) => {
 
             next();
 
@@ -497,6 +498,26 @@ const accountMethod = {
     getUserById: ( uid, allowDeleted, next ) => {
       let query = 'SELECT ' + fields + ', `enable2a`, `password`, `secret`, `recoveryPhrase`, `recoveryPhraseProved` FROM `' + process.env.BUCKET + '` WHERE _type == "account" AND _id == "'
       + uid + '" ';
+      if( !allowDeleted ) query += ' AND `deleted` == false ';
+
+      const q = N1qlQuery.fromString(query);
+        db.query(q, function(e, r) {
+          if(e){
+            console.log('error in accountMethod.getUserById');
+            console.log(e);
+            next({ "error": e, "msg": errMsg.errorMsg, "result": false });
+          }else{
+            if( r.length === 1)
+              next({ "data": r[0], "result": true });
+            else if( r.length === 0 )
+              next({ "msg": errMsg.accountNotFound, "result": false });
+            else
+              next({ "msg": errMsg.errorMsg, "result": false });
+          }
+        });
+    },
+    getAccountByUsername: ( username, allowDeleted, next ) => {
+      let query = 'SELECT ' + fields + ', `enable2a`, `password`, `secret`, `recoveryPhrase`, `recoveryPhraseProved` FROM `' + process.env.BUCKET + '` WHERE _type == "account" AND `username` == "' + username + '" ';
       if( !allowDeleted ) query += ' AND `deleted` == false ';
 
       const q = N1qlQuery.fromString(query);

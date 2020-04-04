@@ -866,45 +866,24 @@ describe( 'Account Model Read All', () => {
 
 describe( 'Account Model Read Validate Credentials', () => {
 
-  let badUsernameLoginResult, badPasswordLoginResult, goodLoggingResult;
+  describe( 'Test Bad Username', () => {
 
-  function attemptBadUidLogin( next ) {
-    const passwordForBadLogin = "85Ie!ki49p";
-    accountModel.Read.validateAccount( badUID, passwordForBadLogin, fauxIPS, null, ( result ) => {
-      badUsernameLoginResult = result;
-      next();
-    });
-  }
+    let badUsernameLoginResult;
 
-  function attemptBadPasswordLogin( next ) {
-    const BadPassword = "2M@55iP931p";
-    accountModel.Read.validateAccount( testAccountUID, BadPassword, fauxIPS, null, ( result ) => {
-      badPasswordLoginResult = result;
-      next();
-    });
-  }
-
-  function attemptGoodLogin( next ) {
-    accountModel.Read.validateAccount( testAccountUID, password, fauxIPS, null, ( result ) => {
-      validationToken = result.token;
-      goodLoggingResult = result;
-      next();
-    });
-  }
-
-  before( ( done ) => {
-    attemptBadUidLogin( () => {
-      attemptBadPasswordLogin( () => {
-        attemptGoodLogin( done );
+    function attemptBadUidLogin( next ) {
+      const passwordForBadLogin = "85Ie!ki49p";
+      accountModel.Read.validateAccount( 'badUsername', passwordForBadLogin, fauxIPS, null, ( result ) => {
+        badUsernameLoginResult = result;
+        next();
       });
+    }
+
+    before( done => {
+      attemptBadUidLogin( done );
     });
-  });
 
-  after( ( done ) => {
-    done();
-  });
+    after( done => done() );
 
-  describe( 'Test Bad uid', () => {
     // Property Existence -- ( badUsernameLoginResult )
     it( 'badUsernameLoginResult should NOT have property data', () => {
       expect( badUsernameLoginResult ).to.not.have.property( 'data' );
@@ -943,6 +922,23 @@ describe( 'Account Model Read Validate Credentials', () => {
   });
 
   describe( 'Test Bad Password', () => {
+
+    let badPasswordLoginResult;
+
+    function attemptBadPasswordLogin( next ) {
+      const BadPassword = "2M@55iP931p";
+      accountModel.Read.validateAccount( username, BadPassword, fauxIPS, null, ( result ) => {
+        badPasswordLoginResult = result;
+        next();
+      });
+    }
+
+    before( ( done ) => {
+        attemptBadPasswordLogin( done )
+    });
+
+    after( done => done() );
+
     // Property Existence -- ( badPasswordLoginResult )
     it( 'badPasswordLoginResult should NOT have property data', () => {
       expect( badPasswordLoginResult ).to.not.have.property( 'data' );
@@ -981,6 +977,23 @@ describe( 'Account Model Read Validate Credentials', () => {
   });
 
   describe( 'Test good login', () => {
+
+    let  goodLoggingResult;
+
+    function attemptGoodLogin( next ) {
+      accountModel.Read.validateAccount( username, password, fauxIPS, null, ( result ) => {
+        validationToken = result.token;
+        goodLoggingResult = result;
+        next();
+      });
+    }
+
+    before( ( done ) => {
+      attemptGoodLogin( done );
+    });
+
+    after( done => done() );
+
     // Property Existence -- ( goodLoggingResult )
     it( 'goodLoggingResult should NOT have property data', () => {
       expect( goodLoggingResult ).to.not.have.property( 'data' );
@@ -2392,7 +2405,7 @@ describe( 'Login with 2A', () => {
     let no2A_LoginResult;
 
     function no2A_Login( next ) {
-      accountModel.Read.validateAccount( testAccountUID, passwordUpdated, fauxIPS, null, ( result ) => {
+      accountModel.Read.validateAccount( username, passwordUpdated, fauxIPS, null, ( result ) => {
         no2A_LoginResult = result;
         next();
       });
@@ -2446,7 +2459,7 @@ describe( 'Login with 2A', () => {
     let bad2A_LoginResult;
 
     function no2A_Login( next ) {
-      accountModel.Read.validateAccount( testAccountUID, passwordUpdated, fauxIPS, 000000, ( result ) => {
+      accountModel.Read.validateAccount( username, passwordUpdated, fauxIPS, 000000, ( result ) => {
         bad2A_LoginResult =result;
         next();
       });
@@ -2501,7 +2514,7 @@ describe( 'Login with 2A', () => {
 
     function no2A_Login( next ) {
 
-      accountModel.Read.validateAccount( testAccount2UID, password2, fauxIPS, 000000, ( result ) => {
+      accountModel.Read.validateAccount( username2, password2, fauxIPS, 000000, ( result ) => {
         unecessary2A_LoginResult = result;
         next();
       });
@@ -2553,7 +2566,7 @@ describe( 'Login with 2A', () => {
       function no2A_Login( next ) {
         const token = authenticator.generate( testAccount1_2ASecret );
 
-        accountModel.Read.validateAccount( testAccountUID, passwordUpdated, fauxIPS, token, ( result ) => {
+        accountModel.Read.validateAccount( username, passwordUpdated, fauxIPS, token, ( result ) => {
           good_LoginResult = result;
           if ( result.msg ) {
             console.log( 'result.msg' );
@@ -2609,13 +2622,13 @@ describe( 'Login with 2A', () => {
 
 describe('Delete account', () => {
 
-  describe( 'Delete Account with bad ID', () => {
+  describe( 'Delete Account with bad Username', () => {
 
     let badID_deleteAccountResult;
 
     function badID_deleteAccount( next ) {
       const token = authenticator.generate( testAccount1_2ASecret );
-      accountModel.Delete.accountSoftly( badUID, passwordUpdated, fauxIPS, token, ( result ) => {
+      accountModel.Delete.accountSoftly( 'badUsername', passwordUpdated, fauxIPS, token, ( result ) => {
         badID_deleteAccountResult = result;
         next();
       });
@@ -2656,13 +2669,13 @@ describe('Delete account', () => {
 
   });
 
-  describe( 'Delete Account with good ID', () => {
+  describe( 'Delete Account with good Username', () => {
 
     let good_softDeleteAccountResult;
 
     function good_softDeleteAccount( next ) {
       const token = authenticator.generate( testAccount1_2ASecret );
-      accountModel.Delete.accountSoftly( testAccountUID, passwordUpdated, fauxIPS, token, ( result ) => {
+      accountModel.Delete.accountSoftly( username, passwordUpdated, fauxIPS, token, ( result ) => {
         good_deleteAccountResult = result;
         next();
       });
@@ -3315,17 +3328,55 @@ describe( 'Recover Account', () => {
 
 describe( 'Forgot password.', () => {
 
-    before( done => {
-      done();
+  describe( 'Bad Username', () => {
 
-    });
+      before( done => {
+        done();
 
-    after( done => done() );
+      });
 
-    // Property Exists
+      after( done => done() );
 
-    // Property Type
+      // Property Exists
 
-    // Return Value
+      // Property Type
+
+      // Return Value
+
+  });
+
+  describe( 'Bad Email', () => {
+
+      before( done => {
+        done();
+
+      });
+
+      after( done => done() );
+
+      // Property Exists
+
+      // Property Type
+
+      // Return Value
+
+  });
+
+  describe( 'Good recovery', () => {
+
+      before( done => {
+        done();
+
+      });
+
+      after( done => done() );
+
+      // Property Exists
+
+      // Property Type
+
+      // Return Value
+
+  });
 
 });

@@ -28,9 +28,14 @@ Make sure your server is setup with the necessary ENV vars.
 * BUCKET          ( this should be different buckets based on dev or test scenario )
 * JWT_SECRET      ( this can be any secret, just don't tell anyone )
 * NODE_ENV        ( set to dev or test respectively )
+Email Variables
+* emailHost       ( SMTP Email Host )
+* emailPort       ( SMTP Email Port )
+* emailSecure     ( Boolean true for 465 port, otherwise false )
+* emailUsername   ( Your Email server username )
+* emailPassword   ( Your Email server password )
 
-
-## License: 
+## License:
 * Apache-2.0
 * Link https://www.apache.org/licenses/LICENSE-2.0.html
 * Summary https://tldrlegal.com/license/apache-license-2.0-%28apache-2.0%29

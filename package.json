@@ -41,6 +41,7 @@
     "jsonwebtoken": "8.5.1",
     "moment": "2.24.0",
     "moment-json-parser": "^0.9.1",
+    "nodemailer": "^6.4.6",
     "osom": "3.0.3",
     "qrcode": "1.4.4",
     "speakeasy": "2.0.0",
