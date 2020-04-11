@@ -1,10 +1,10 @@
 {
   "name": "cently-boilerplate",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CENTLy Couchbase Express Node Tested Login. A boilerplate application for building a RESTful APIs in Node.js using express with osom model validation.",
   "main": "bin/index.js",
   "bin": {
-    "MENTL-Boilerplate": "index.js"
+    "CENTLY-Boilerplate": "index.js"
   },
   "scripts": {
     "dev": "env-cmd -f ./.config/dev.env node bin/index.js",
@@ -45,7 +45,7 @@
     "osom": "3.0.3",
     "qrcode": "1.4.4",
     "speakeasy": "2.0.0",
-    "uuid": "7.0.2",
+    "uuid": "7.0.3",
     "validator": "13.0.0",
     "wrap-sync": "1.0.0"
   },

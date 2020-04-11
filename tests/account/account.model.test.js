@@ -165,26 +165,26 @@ describe( 'Account Model Create a user account', () => {
   }
 
   function buildPrimaryIndex( next ) {
-      const testPKaccount = N1qlQuery.fromString('CREATE PRIMARY INDEX ON `'+process.env.BUCKET+'`');
-      db.query(testPKaccount, function(e) {
+      const testPKAccount = N1qlQuery.fromString('CREATE PRIMARY INDEX ON `'+process.env.BUCKET+'`');
+      db.query(testPKAccount, function(e) {
           if(e) {
-              //console.log('testPKaccount failed.');
+              //console.log('testPKAccount failed.');
               //console.log(e);
           } else {
-              //console.log('testPKaccount should be added.');
+              //console.log('testPKAccount should be added.');
           }
           next();
       });
   }
 
   function buildIndexes( next ) {
-      const testFKaccount_username =  N1qlQuery.fromString( 'CREATE INDEX testFKaccount_username ON `'+process.env.BUCKET+'`(username) where `_type` == account' );
-      db.query(testFKaccount_username, function( e ) {
+      const testFKAccount_username =  N1qlQuery.fromString( 'CREATE INDEX testFKAccount_username ON `'+process.env.BUCKET+'`(username) where `_type` == account' );
+      db.query(testFKAccount_username, function( e ) {
           //if( e ) {
-              //console.log( 'testFKaccount_username failed.' );
+              //console.log( 'testFKAccount_username failed.' );
               //console.log( e );
           //} else {
-              //console.log( 'testFKaccount_username should be added.' );
+              //console.log( 'testFKAccount_username should be added.' );
           //}
           next();
       });
@@ -934,7 +934,7 @@ describe( 'Account Model Read Validate Credentials', () => {
     }
 
     before( ( done ) => {
-        attemptBadPasswordLogin( done )
+        attemptBadPasswordLogin( done );
     });
 
     after( done => done() );
@@ -1676,7 +1676,7 @@ describe( 'Update email', () => {
 
   describe( 'Update with a bad email', () => {
     let update_bad_email_Result;
-    const email = "bob@somesitecom";
+    const email = "bob@someSiteCom";
 
     function updateAccount( next ) {
       accountModel.Update.email( testAccountUID, email, ( result ) => {
@@ -1906,7 +1906,7 @@ describe( 'generate a QRcode and secret for 2a', () => {
     let qrcodeResult;
 
     function getSecret( next ) {
-      generatedSecret = accountModel.Update.generateQRcode( badUID, ( result ) => {
+      generatedSecret = accountModel.Update.generateQRCode( badUID, ( result ) => {
         qrcodeResult = result;
         next();
       });
@@ -1958,7 +1958,7 @@ describe( 'generate a QRcode and secret for 2a', () => {
     let qrcodeResult;
 
     function getSecret( next ) {
-      generatedSecret = accountModel.Update.generateQRcode( testAccountUID, ( result ) => {
+      generatedSecret = accountModel.Update.generateQRCode( testAccountUID, ( result ) => {
         qrcodeResult = result;
         testAccount1_2ASecret = result.secret.base32;
         next();
@@ -2245,13 +2245,13 @@ describe( 'Update twoStep', () => {
 
     let noConfirm_twoStepResult;
     const twoA = true;
-    const token = 000000;
+    const token = '000000';
 
     function updateTwoA( next ) {
       accountModel.Update.twoStep( testAccount2UID, token, twoA, ( result ) => {
         noConfirm_twoStepResult = result;
         next();
-      })
+      });
     }
 
     before( ( done ) => {
@@ -2354,7 +2354,7 @@ describe( 'Update twoStep', () => {
       accountModel.Update.twoStep( badUID, token, twoA, ( result ) => {
         badID_twoStepResult = result;
         next();
-      })
+      });
     }
 
     before( ( done ) => {
@@ -2459,7 +2459,7 @@ describe( 'Login with 2A', () => {
     let bad2A_LoginResult;
 
     function no2A_Login( next ) {
-      accountModel.Read.validateAccount( username, passwordUpdated, fauxIPS, 000000, ( result ) => {
+      accountModel.Read.validateAccount( username, passwordUpdated, fauxIPS, '000000', ( result ) => {
         bad2A_LoginResult =result;
         next();
       });
@@ -2508,14 +2508,14 @@ describe( 'Login with 2A', () => {
 
   });
 
-  describe( 'Login with Unecessary 2A code.', () => {
+  describe( 'Login with Unnecessary 2A code.', () => {
 
-    let unecessary2A_LoginResult;
+    let unnecessary2A_LoginResult;
 
     function no2A_Login( next ) {
 
-      accountModel.Read.validateAccount( username2, password2, fauxIPS, 000000, ( result ) => {
-        unecessary2A_LoginResult = result;
+      accountModel.Read.validateAccount( username2, password2, fauxIPS, '000000', ( result ) => {
+        unnecessary2A_LoginResult = result;
         next();
       });
     }
@@ -2527,34 +2527,34 @@ describe( 'Login with 2A', () => {
     after( done => done() );
 
     // Property Exists
-    it( 'unecessary2A_LoginResult should NOT have property msg', () => {
-      expect( unecessary2A_LoginResult ).to.not.have.property( 'msg' );
+    it( 'unnecessary2A_LoginResult should NOT have property msg', () => {
+      expect( unnecessary2A_LoginResult ).to.not.have.property( 'msg' );
     });
 
-    it( 'unecessary2A_LoginResult should NOT have property data', () => {
-      expect( unecessary2A_LoginResult ).to.not.have.property( 'data' );
+    it( 'unnecessary2A_LoginResult should NOT have property data', () => {
+      expect( unnecessary2A_LoginResult ).to.not.have.property( 'data' );
     });
 
-    it( 'unecessary2A_LoginResult should have property result', () => {
-      expect( unecessary2A_LoginResult ).to.have.property( 'result' );
+    it( 'unnecessary2A_LoginResult should have property result', () => {
+      expect( unnecessary2A_LoginResult ).to.have.property( 'result' );
     });
 
-    it( 'unecessary2A_LoginResult should have property token', () => {
-      expect( unecessary2A_LoginResult ).to.have.property( 'token' );
+    it( 'unnecessary2A_LoginResult should have property token', () => {
+      expect( unnecessary2A_LoginResult ).to.have.property( 'token' );
     });
 
     // Property Type
-    it( 'unecessary2A_LoginResult result should be a boolean', () => {
-      expect( unecessary2A_LoginResult.result ).to.be.a( 'boolean' );
+    it( 'unnecessary2A_LoginResult result should be a boolean', () => {
+      expect( unnecessary2A_LoginResult.result ).to.be.a( 'boolean' );
     });
 
-    it( 'unecessary2A_LoginResult token should be a string', () => {
-      expect( unecessary2A_LoginResult.token ).to.be.a( 'string' );
+    it( 'unnecessary2A_LoginResult token should be a string', () => {
+      expect( unnecessary2A_LoginResult.token ).to.be.a( 'string' );
     });
 
     // Return Value
-    it( 'unecessary2A_LoginResult result should have value of true', () => {
-      expect( unecessary2A_LoginResult.result ).to.equal( true );
+    it( 'unnecessary2A_LoginResult result should have value of true', () => {
+      expect( unnecessary2A_LoginResult.result ).to.equal( true );
     });
 
   });
@@ -2980,12 +2980,12 @@ describe('Delete account', () => {
 
     });
 
-    describe( 'Update generateQRcode', () => {
+    describe( 'Update generateQRCode', () => {
 
       let generateQRResult;
 
       function getSecret( next ) {
-        generatedSecret = accountModel.Update.generateQRcode( testAccountUID, ( result ) => {
+        generatedSecret = accountModel.Update.generateQRCode( testAccountUID, ( result ) => {
           generateQRResult = result;
           next();
         });
@@ -3144,7 +3144,7 @@ describe('Delete account', () => {
         accountModel.Update.twoStep( testAccountUID, token, twoA, ( result ) => {
           deleteAccount_twoStepResult = result;
           next();
-        })
+        });
       }
 
       before( ( done ) => {

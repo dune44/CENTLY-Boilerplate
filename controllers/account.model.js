@@ -89,7 +89,7 @@ const accountModel = {
                 if(e){
                     console.log('error in accountModel.Read.accountByUsername');
                     console.log(e);
-                    next({ "error": e, "msg": 'An error occured', "result": false });
+                    next({ "error": e, "msg": 'An error occurred', "result": false });
                 }else{
                     if ( r.length === 1 ) {
                         next({ "data": r[0], "result": true });
@@ -111,7 +111,7 @@ const accountModel = {
               if(e){
                   console.log('error in accountModel.Read.all');
                   console.log(e);
-                  next({ "error": e, "msg": 'An error occured', "result": false });
+                  next({ "error": e, "msg": 'An error occurred', "result": false });
               }else{
                   if ( r.length > 0 ) {
                       next({ "data": r, "result": true });
@@ -191,10 +191,10 @@ const accountModel = {
                 next({ "msg": errMsg.roleInvalid, "result": false });
             }
         },
-      validateAccount: ( username, password, ips, twoAtoken, next ) => {
+      validateAccount: ( username, password, ips, twoAToken, next ) => {
         accountMethod.getAccountByUsername( username, true, ( account ) => {
           if( account.result ) {
-            const twoAResult = ( account.data.enable2a ) ? accountMethod.validate2a( account.data.secret, twoAtoken ) : true;
+            const twoAResult = ( account.data.enable2a ) ? accountMethod.validate2a( account.data.secret, twoAToken ) : true;
             if( twoAResult ) {
               accountMethod.passwordCompare( password, account.data.password, ( result ) => {
                 if( result ){
@@ -221,7 +221,7 @@ const accountModel = {
               console.log( e );
               console.log( );
               console.log( 'token passed: ' + token );
-              next({ "error": e, "msg": 'An error occured', "result": false });
+              next({ "error": e, "msg": 'An error occurred', "result": false });
             } else if(moment().unix() > decoded.exp ){
               // time expired.
               next({ result: false });
@@ -264,7 +264,7 @@ const accountModel = {
                 next({ "msg": 'Email cannot be blank', "result": false});
             }
         },
-      generateQRcode: ( uid, next ) => {
+      generateQRCode: ( uid, next ) => {
           const secret = speakeasy.generateSecret();
           QRCode.toDataURL(secret.otpauth_url, function(e, data_url) {
             if( e ) {
@@ -450,8 +450,8 @@ const accountModel = {
         }
     },
     Delete: {
-      accountSoftly: ( username, password, ips, twoAtoken, next) => {
-          accountModel.Read.validateAccount( username, password, ips, twoAtoken, ( result ) => {
+      accountSoftly: ( username, password, ips, twoAToken, next) => {
+          accountModel.Read.validateAccount( username, password, ips, twoAToken, ( result ) => {
             if( result.result ) {
               const qU = N1qlQuery.fromString('UPDATE `' + process.env.BUCKET +
               '` SET deleted = true WHERE _type == "account" AND `username` == "' + username + '" ');
@@ -496,8 +496,7 @@ const accountMethod = {
         return ( nameList.indexOf( username ) > -1 );
     },
     getUserById: ( uid, allowDeleted, next ) => {
-      let query = 'SELECT ' + fields + ', `enable2a`, `password`, `secret`, `recoveryPhrase`, `recoveryPhraseProved` FROM `' + process.env.BUCKET + '` WHERE _type == "account" AND _id == "'
-      + uid + '" ';
+      let query = 'SELECT ' + fields + ', `enable2a`, `password`, `secret`, `recoveryPhrase`, `recoveryPhraseProved` FROM `' + process.env.BUCKET + '` WHERE _type == "account" AND _id == "' + uid + '" ';
       if( !allowDeleted ) query += ' AND `deleted` == false ';
 
       const q = N1qlQuery.fromString(query);
