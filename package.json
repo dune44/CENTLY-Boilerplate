@@ -39,7 +39,7 @@
     "express-rate-limit": "^5.1.1",
     "helmet": "4.6.0",
     "jsonwebtoken": "8.5.1",
-    "moment": "2.29.1",
+    "moment": "2.29.2",
     "moment-json-parser": "0.9.1",
     "nodemailer": "6.6.1",
     "osom": "3.0.3",
